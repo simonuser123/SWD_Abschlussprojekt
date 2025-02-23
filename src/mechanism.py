@@ -1,8 +1,13 @@
+import os
+from tinydb import TinyDB, Query
+from serializer import serializer
 import math
 
 class Joint:
-    def __init__(self, joint_id, x=0.0, y=0.0, is_fixed=False, on_circular_path=False):
-        self.joint_id = joint_id
+    db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Joints')
+
+    def __init__(self, name=chr, x=float, y=float, is_fixed=True, on_circular_path=False): #    def __init__(self, joint_id, x=0.0, y=0.0, is_fixed=True, on_circular_path=False):
+        self.name = name
         self.x = x
         self.y = y
         self.is_fixed = is_fixed
@@ -15,30 +20,45 @@ class Joint:
     def get_position(self):
         return (self.x, self.y)
 
+    def save(self):
+        qr = Query()
+        # Check if the question already exists in the database
+        result = self.db_connector.search(qr.name == self.name)
+        if result:
+            # Update the existing record with the current instance's data
+            result = self.db_connector.update(self.__dict__, doc_ids=[result[0].doc_id])
+        else:
+            # If the question doesn't exist, insert a new record
+            self.db_connector.insert(self.__dict__)
+
+
     # Optional: visualize or print info
     def print_info(self):
-        print(f"Joint {self.joint_id} at ({self.x}, {self.y})")
+        print(f"Joint {self.name} at ({self.x}, {self.y})")
 
     
 class Link:
-    def __init__(self, joint_a, joint_b, length):
+    db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Links')
+
+    def __init__(self, joint_a, joint_b):
         self.joint_a = joint_a
         self.joint_b = joint_b
-        self.length = length
 
     def get_current_length(self):
         dx = self.joint_b.x - self.joint_a.x
         dy = self.joint_b.y - self.joint_a.y
         return math.sqrt(dx*dx + dy*dy)
     
-    def get_length_error(self):
-        return self.get_current_length() - self.length
+    #def get_length_error(self):
+     #  return self.get_current_length() - self.length
     
     # Optional: visualize or print info
     def print_info(self):
         print(f"Link between Joint {self.joint_a.joint_id} and Joint {self.joint_b.joint_id} with length {self.length}")
 
 class Mechanism:
+    db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Mechanism')
+
     def __init__(self, joints=None, links=None, angle=0.0):
         self.joints = joints if joints else []
         self.links = links if links else []
@@ -73,3 +93,34 @@ class Mechanism:
                 return joint
         return None
     
+    def get_all_x(self) -> float:
+        try:
+            return [joint.x for joint in self.joints]
+        except:
+            return 0
+    
+    def get_all_y(self) -> float:
+        try: 
+            return [joint.y for joint in self.joints]
+        except:
+            return 0
+    
+    def get_link(self):
+        for link in self.links:
+            return link
+        return None 
+
+    
+if __name__ == "__main__":
+    g1= Joint(1,0,0)
+    g2= Joint(2,0,10)
+    g3= Joint(3,10,10)
+
+    s1= Link(g1,g2)
+    s2= Link(g2,g3)
+
+    m1= Mechanism([g1,g2,g3],[s1,s2])
+
+    print(s1.get_current_length())
+    print(m1.get_all_x())
+    print(m1.get_link())
