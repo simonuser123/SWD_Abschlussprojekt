@@ -2,6 +2,7 @@ import os
 from tinydb import TinyDB, Query
 from serializer import serializer
 import math
+import numpy as np
 
 class Joint:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
