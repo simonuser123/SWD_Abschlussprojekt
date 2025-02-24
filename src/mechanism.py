@@ -103,6 +103,10 @@ class Link:
             "length": self.length
         }
     
+    @classmethod
+    def find_link_info(self):
+        return self.db_connector.all()
+        
     # Optional: visualize or print info
     def print_info(self):
         print(f"Link between Joint {self.joint_a.joint_id} and Joint {self.joint_b.joint_id} with length {self.length}")
@@ -110,7 +114,8 @@ class Link:
 class Mechanism:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Mechanism')
 
-    def __init__(self, joints=None, links=None, angle=0.0):
+    def __init__(self,name:str, joints=None, links=None, angle=0.0):
+        self.name = name
         self.joints = joints if joints else []
         self.links = links if links else []
         self.driven_angle = angle
@@ -161,18 +166,35 @@ class Mechanism:
             return link
         return None 
 
-    
+    def save(self):
+        qr = Query()
+        result = self.db_connector.search(qr.name == self.name)
+        if result:
+            result = self.db_connector.update(self.to_dict(), doc_ids=[result[0].doc_id])
+        else:
+            self.db_connector.insert(self.to_dict())
+
+    def to_dict(self):
+        joints_dict = [joint.to_dict() for joint in self.joints]
+        links_dict = [link.to_dict() for link in self.links]   
+
+        return {
+            "name": self.name,
+            "joints": joints_dict,
+            #"links": links_dict,    
+            "driven_angle": self.driven_angle,
+            "boundary_conditions": self.boundary_conditions
+        }
 if __name__ == "__main__":
-    g1= Joint(1,0,0)
-    g2= Joint(2,0,10)
-    g3= Joint(3,10,10)
+    g1 = Joint("g1",0,1)
+    g2 = Joint("g2",1,2)
+    l1 = Link("l1",g1,g2)
 
-    s1= Link("t",g1,g2)
-    s1.save()
-    s2= Link("g", g2,g3)
 
-    m1= Mechanism([g1,g2,g3],[s1,s2])
-
-    print(s1.get_current_length())
-    print(m1.get_all_x())
-    print(m1.get_link())
+    m1= Mechanism("m1",[g1,g2],[l1])
+    m1.save()
+    print(m1)
+    print(m1.to_dict())
+   # print(s1.get_current_length())
+    #print(m1.get_all_x())
+    #print(m1.get_link())
