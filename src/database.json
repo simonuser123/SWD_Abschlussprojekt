@@ -2,17 +2,44 @@
     "Joints": {
         "1": {
             "name": "p0",
-            "x": "0",
-            "y": "0",
+            "x": 0.0,
+            "y": 0.0,
             "is_fixed": true,
             "on_circular_path": false
         },
         "2": {
             "name": "p1",
-            "x": "10",
-            "y": "10",
+            "x": 10.0,
+            "y": 0.0,
             "is_fixed": true,
             "on_circular_path": false
+        },
+        "3": {
+            "name": "p3",
+            "x": 10.0,
+            "y": 10.0,
+            "is_fixed": true,
+            "on_circular_path": false
+        }
+    },
+    "Links": {
+        "1": {
+            "name": "",
+            "joint_a": {
+                "name": "p0",
+                "x": 0.0,
+                "y": 0.0,
+                "is_fixed": true,
+                "on_circular_path": false
+            },
+            "joint_b": {
+                "name": "p3",
+                "x": 10.0,
+                "y": 10.0,
+                "is_fixed": true,
+                "on_circular_path": false
+            },
+            "length": 14.142135623730951
         }
     }
 }

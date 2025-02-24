@@ -6,7 +6,7 @@ import math
 class Joint:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Joints')
 
-    def __init__(self, name=chr, x=float, y=float, is_fixed=True, on_circular_path=False): #    def __init__(self, joint_id, x=0.0, y=0.0, is_fixed=True, on_circular_path=False):
+    def __init__(self, name=str, x=float, y=float, is_fixed=True, on_circular_path=False): #    def __init__(self, joint_id, x=0.0, y=0.0, is_fixed=True, on_circular_path=False):
         self.name = name
         self.x = x
         self.y = y
@@ -22,15 +22,45 @@ class Joint:
 
     def save(self):
         qr = Query()
-        # Check if the question already exists in the database
+        # Check if the device already exists in the database
         result = self.db_connector.search(qr.name == self.name)
         if result:
             # Update the existing record with the current instance's data
-            result = self.db_connector.update(self.__dict__, doc_ids=[result[0].doc_id])
+            result = self.db_connector.update(self.to_dict(), doc_ids=[result[0].doc_id])
         else:
-            # If the question doesn't exist, insert a new record
-            self.db_connector.insert(self.__dict__)
+            # If the device doesn't exist, insert a new record
+            self.db_connector.insert(self.to_dict())
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "x": self.x,
+            "y": self.y,
+            "is_fixed": self.is_fixed,
+            "on_circular_path": self.on_circular_path
+        }
+    @classmethod
+    def find_all_joints(cls):
+        result = cls.db_connector.all()
+        if result:
+            result = [x["name"] for x in result if "name" in x]
+            return result
+        return None
+    
+    @classmethod
+    def find_joints_info(self):
+        return self.db_connector.all()
+    
+    @classmethod
+    def find_by_name(cls, name):
+        qr = Query()  
+        result = cls.db_connector.search(qr.name == name)
+        if result:
+            data = result[0]
+            return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
+        return None
+
+    
 
     # Optional: visualize or print info
     def print_info(self):
@@ -40,17 +70,38 @@ class Joint:
 class Link:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'), storage=serializer).table('Links')
 
-    def __init__(self, joint_a, joint_b):
+    def __init__(self, name=str, joint_a=Joint, joint_b=Joint):
         self.joint_a = joint_a
         self.joint_b = joint_b
+        self.name =  name
+        self.length = None
+
+    def initialize_self_lenght(self):
+        self.length = self.get_current_length()
 
     def get_current_length(self):
         dx = self.joint_b.x - self.joint_a.x
         dy = self.joint_b.y - self.joint_a.y
         return math.sqrt(dx*dx + dy*dy)
     
-    #def get_length_error(self):
-     #  return self.get_current_length() - self.length
+    def get_length_error(self):
+        return self.get_current_length() - self.length
+    
+    def save(self):
+        qr = Query()
+        result = self.db_connector.search(qr.name == self.name)
+        if result:
+            self.db_connector.update(self.to_dict(), doc_ids=[result[0].doc_id])
+        else:
+            self.db_connector.insert(self.to_dict())
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "joint_a": self.joint_a.to_dict(),
+            "joint_b": self.joint_b.to_dict(),
+            "length": self.length
+        }
     
     # Optional: visualize or print info
     def print_info(self):
@@ -78,14 +129,14 @@ class Mechanism:
         self.boundary_conditions.append(condition)
     
     # Optional: visualize or print info
-    def print_info(self):
-        print(f"Mechanism with {len(self.joints)} joints and {len(self.links)} links")
-        for joint in self.joints:
-            joint.print_info()
-        for link in self.links:
-            link.print_info()
-        print(f"Driven angle: {self.driven_angle}")
-        print(f"Boundary conditions: {self.boundary_conditions}")
+    # def print_info(self):
+    #     print(f"Mechanism with {len(self.joints)} joints and {len(self.links)} links")
+    #     for joint in self.joints:
+    #         joint.print_info()
+    #     for link in self.links:
+    #         link.print_info()
+    #     print(f"Driven angle: {self.driven_angle}")
+    #     print(f"Boundary conditions: {self.boundary_conditions}")
 
     def get_joint_by_id(self, joint_id):
         for joint in self.joints:
@@ -116,8 +167,9 @@ if __name__ == "__main__":
     g2= Joint(2,0,10)
     g3= Joint(3,10,10)
 
-    s1= Link(g1,g2)
-    s2= Link(g2,g3)
+    s1= Link("t",g1,g2)
+    s1.save()
+    s2= Link("g", g2,g3)
 
     m1= Mechanism([g1,g2,g3],[s1,s2])
 
