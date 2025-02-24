@@ -46,7 +46,6 @@ with col1:
                 linkName = Link(linkName, firstPoint, secondPoint)
                 linkName.initialize_self_lenght()
                 linkName.save()
-                #newMechanism.add_link(linkName)
             except:
                 st.error("Error!")
 
@@ -74,16 +73,15 @@ with col1:
         newMechanism = Mechanism(newMechanismName, [], [])
         if st.button("Save mech"):
 
-            for joint_data in Joint.find_joints_info():
-                joint = Joint.find_by_name(joint_data["name"])  # Stelle sicher, dass es ein Joint-Objekt ist
+            for joint in Joint.find_joints_info():
+                joint = Joint.find_by_name(joint["name"]) 
                 if joint:
                     newMechanism.add_joint(joint)
 
-            for link_data in Link.find_link_info():
-                link = Link(link_data["name"], 
-                            Joint.find_by_name(link_data["joint_a"]["name"]), 
-                            Joint.find_by_name(link_data["joint_b"]["name"]))
-                newMechanism.add_link(link)
+            for link in Link.find_link_info():
+                link = Link.find_by_name(link["name"])
+                if link:
+                    newMechanism.add_link(link)
 
             newMechanism.save()
   
