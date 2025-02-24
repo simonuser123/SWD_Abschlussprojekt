@@ -121,6 +121,7 @@ class Link:
             return link
         return None
         
+
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
 
@@ -277,6 +278,7 @@ class Mechanism:
                         queue.append(neighbor)
         
         return len(visited) == len(self.joints)
+
 
 
 if __name__ == "__main__":
