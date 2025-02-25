@@ -63,6 +63,8 @@ class Joint:
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
     
+    def print_info(self):
+        print(f"Joint {self.name} at ({self.x}, {self.y})")
 
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
@@ -128,6 +130,9 @@ class Link:
         qr = Query()
         result = cls.db_connector.search(qr.mechanism == mechanismName)
         return [data["name"] for data in result]
+    
+    def print_info(self):
+        print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
 
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
