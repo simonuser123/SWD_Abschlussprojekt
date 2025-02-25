@@ -30,7 +30,7 @@ class SimulationManager:
         self.mechanism = load_mechanism_from_db(mechanismName)
         self.simulator = KinematicsSimulator(self.mechanism)
         # Speichert die Bahnkurven der Gelenke als Dictionary {joint_name: [Positionen]}
-        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}          #  ---------
+        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}   
 
     def simulate_over_360(self, num_steps=360):
         """
@@ -52,7 +52,7 @@ class SimulationManager:
         Die Animation wird in einer temporären Datei gespeichert und anschließend in einen BytesIO-Puffer geladen.
         """
         n_frames = len(next(iter(self.trajectories.values())))
-        fig, ax = plt.subplots()          #fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(10, 10))
         
         def update(frame):
             ax.clear()
@@ -79,3 +79,4 @@ class SimulationManager:
             buf = io.BytesIO(f.read())
         os.remove(temp_filename)
         return buf
+    

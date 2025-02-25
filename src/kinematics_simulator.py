@@ -12,9 +12,10 @@ class KinematicsSimulator:
         self.mechanism = mechanism
         # Optimierbar sind jene Gelenke, die weder fix noch getrieben sind.
         self.free_joints = [joint for joint in self.mechanism.joints if (not joint.is_fixed) and (not joint.on_circular_path)]
-        
+
+        # --------- wird glaube ich nicht benötigt -----------
         # Stelle sicher, dass alle Links ihre Soll-Länge (ursprüngliche Länge) initialisiert haben.
-        #for link in self.mechanism.links:                 #---------------
+        #for link in self.mechanism.links:                           
          #    if link.length is None:
           #       link.initialize_self_lenght()
 
@@ -26,15 +27,14 @@ class KinematicsSimulator:
         """
         for joint in self.mechanism.joints:
             if joint.on_circular_path:
-                # Suche einen Link, der dieses Gelenk mit einem fixen Gelenk verbindet.
                 for link in self.mechanism.links:
-                    if link.joint_b == joint and link.joint_a.is_fixed:
+                    if link.joint_b.name == joint.name and link.joint_a.is_fixed:
                         center = link.joint_a
                         radius = link.length  
                         joint.x = center.x + radius * np.cos(self.mechanism.driven_angle)
                         joint.y = center.y + radius * np.sin(self.mechanism.driven_angle)
                         break
-                    elif link.joint_a == joint and link.joint_b.is_fixed:
+                    elif link.joint_a.name == joint.name and link.joint_b.is_fixed:
                         center = link.joint_b
                         radius = link.length
                         joint.x = center.x + radius * np.cos(self.mechanism.driven_angle)
@@ -47,16 +47,19 @@ class KinematicsSimulator:
         - Für jeden Link wird die Differenz zwischen aktueller Länge und Soll-Länge berechnet.
         """
         # Aktualisiere die Positionen der freien Gelenke anhand des Parametervektors.
+
         for i, joint in enumerate(self.free_joints):
             joint.x = params[2 * i]
             joint.y = params[2 * i + 1]
-        
-        # Berechne den Längenfehler für jeden Link.
+
         errors = []
         for link in self.mechanism.links:
-            error = link.get_current_length() - link.length
+            current_length = link.get_current_length()
+            error = current_length - link.length
             errors.append(error)
+            print(f"Link {link.name}: current length = {current_length}, target = {link.length}, error = {error}")
         return np.array(errors)
+
     
     def optimize(self):
         """
@@ -167,4 +170,3 @@ if __name__ == "__main__":
     print(f"Gesamter quadratischer Fehler: {mech.compute_total_error():.4f}\n")
     print("Optimierungsresultat:")
     print(result)
-    pass

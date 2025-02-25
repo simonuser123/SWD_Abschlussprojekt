@@ -68,6 +68,9 @@ class Joint:
 
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
+    
+    def __repr__(self):
+        return f"Joint {self.name} at ({self.x}, {self.y})"
 
 # +++++++++++++ Link Class +++++++++++++
 class Link:
@@ -135,6 +138,9 @@ class Link:
         print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
 
     def __str__(self):
+        return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
+    
+    def __repr__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
 
 # +++++++++++++ Mechanism Class +++++++++++++
@@ -368,4 +374,6 @@ if __name__ == "__main__":
     #print(joint1)
     #print(joint2)
     print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
+    print(Mechanism.find_links_by_mechanism("Viergelenkkette"))
+
     

@@ -17,7 +17,7 @@ st.title("Live- Editor")
 
 with st.sidebar:
     st.title("Settings")
-    with st.form("add Point"):
+    with st.form("Save Point"):
     # ++++++ add new point ++++++
         st.write("add new Point")
         newNamePoint = st.text_input("name", key = "new_name_point")
@@ -27,7 +27,7 @@ with st.sidebar:
         newPointOnCircularPath = st.checkbox("is Point on Circular path?")
 
         #if newNamePoint
-        if st.form_submit_button("add point"):
+        if st.form_submit_button("Save point"):
             try: 
                 newNamePoint = Joint(newNamePoint, newXPoint, newYPoint, newPointFixed, newPointOnCircularPath)
                 newNamePoint.save()
@@ -73,7 +73,9 @@ with st.sidebar:
             newMechanism.save()
   
 
-#with col2:
+
+# ++++++++++ Live Editor +++++++++++++++++
+
 # ++++++ erstelle Plot ++++++
 fig, ax = plt.subplots()
 for points in Joint.find_joints_info():
@@ -97,15 +99,16 @@ else:
 all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
 if not  all_links_info:
     st.warning("Noch keine Links gespeichert.")
-else:
-    df1 = pd.DataFrame( all_links_info)
-    required_columns = ["name", "Joint A", "Joint B"]
-    st.write(df1)
+#else:
+    #for links in all_links_info:
+     #   df1 = pd.DataFrame(link["name"],link["joint_a"]["name"],link["joint_b"]["name"])
+    #df1 = pd.DataFrame(all_links_info)
+    #required_columns = ["name","Joint a", "Joint B"]
+    #st.write(df1)
 
-
+# ++++++++++++++++++ Animation Editor +++++++++++++++++++
 st.header("360° Simulation & Animation")
 st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
-
 
 #Erzeuge den SimulationManager (Singleton)
 mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
@@ -113,14 +116,13 @@ sim_manager = SimulationManager(mech)
 # Der Mechanismus wird vom SimulationManager verwaltet:
 m1 = sim_manager.mechanism
 
-
 if st.button("Run 360° Animation"):
     with st.spinner("Simuliere und erstelle Animation..."):
         # Führe die Simulation durch (Speicherung der Trajektorien)
         sim_manager.simulate_over_360(num_steps=360)
         # Erstelle die GIF-Animation
         gif_buf = sim_manager.create_animation()
-    st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width =True)
+        st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width =True)
 
 
 if __name__ == "__main__":
