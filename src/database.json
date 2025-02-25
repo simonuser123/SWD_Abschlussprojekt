@@ -27,6 +27,13 @@
             "y": 0.0,
             "is_fixed": true,
             "on_circular_path": false
+        },
+        "5": {
+            "name": "p4",
+            "x": 10.0,
+            "y": 20.0,
+            "is_fixed": false,
+            "on_circular_path": false
         }
     },
     "Links": {

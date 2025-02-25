@@ -9,15 +9,7 @@ from simulation_manager import SimulationManager
 # ++++++ Page Settings ++++++
 #st.set_page_config(layout="wide")
 
-
-# Erzeuge den SimulationManager (Singleton)
-mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
-sim_manager = SimulationManager(mech)
-# Der Mechanismus wird vom SimulationManager verwaltet:
-m1 = sim_manager.mechanism
-
-
-st.title("Überschrift!")
+st.title("Live- Editor")
 
 #col1, col2 = st.columns(2)
 #st.sidebar["side"]
@@ -104,11 +96,19 @@ for link in Link.find_link_info():
     x = (link["joint_a"]["x"],link["joint_b"]["x"])
     y = (link["joint_a"]["y"],link["joint_b"]["y"])
     ax.plot(x,y)
-#ax.legend()            # Fehlermeldung wenn keine Points oder links in Db
+    ax.legend()            # Fehlermeldung wenn keine Points oder links in Db. Eventuell schon behoben
 st.pyplot(fig)
 
 st.header("360° Simulation & Animation")
 st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
+
+
+#Erzeuge den SimulationManager (Singleton)
+mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
+sim_manager = SimulationManager(mech)
+# Der Mechanismus wird vom SimulationManager verwaltet:
+m1 = sim_manager.mechanism
+
 
 if st.button("Run 360° Animation"):
     with st.spinner("Simuliere und erstelle Animation..."):
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 #     # print(m1.get_all_y())
 
 # # #++++++++++++++++++++++++++++++++++
-    # p0= Joint("p0",0,0)
+#
     # p0.save()
     # p1= Joint("p1",1,1)
     # p1.save()
@@ -160,8 +160,10 @@ if __name__ == "__main__":
 #     #Joint(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"]
 
     #sim_manager = SimulationManager("Viergelenkkette")
-    print(Joint.find_joints_by_mechanism("Viergelenkkette"))
+    #print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
+    #print(Mechanism.find_links_by_mechanism("Viergelenkkette"))
+
 # Der Mechanismus wird vom SimulationManager verwaltet:
     #m1 = sim_manager.mechanism
     #print(m1)
-    
+    pass

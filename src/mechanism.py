@@ -6,7 +6,6 @@ import numpy as np
 
 # +++++++++++++ Joint Class +++++++++++++
 class Joint:
-    ''' Create a Joint/ Point'''
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Joints')
 
@@ -63,20 +62,21 @@ class Joint:
             data = result[0]
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
+    
 
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
 
-
+# +++++++++++++ Link Class +++++++++++++
 class Link:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Links')
 
-    def __init__(self, name: str, joint_a: Joint, joint_b: Joint):
+    def __init__(self, name: str, joint_a: Joint, joint_b: Joint, length = None):
         self.name = name
         self.joint_a = joint_a
         self.joint_b = joint_b
-        self.length = None  # Ziel-/Soll-Länge
+        self.length = length # Ziel-/Soll-Länge
 
     def initialize_self_lenght(self):
         self.length = self.get_current_length()
@@ -128,7 +128,6 @@ class Link:
         qr = Query()
         result = cls.db_connector.search(qr.mechanism == mechanismName)
         return [data["name"] for data in result]
-
 
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
@@ -293,6 +292,62 @@ class Mechanism:
         if result:
             return [x["name"] for x in result if "name" in x]
         return None
+    
+    @classmethod
+    def find_joints_by_mechanism(cls, mechanismName):
+        '''Zuerst wird eine Liste von Listen aller Joints erstellt. Deshalb unten die zwei for schleifen'''
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanismName)
+        if result:
+            joint_data = [x["joints"] for x in result]
+        joints = []
+        for data_list in joint_data:
+            for data in data_list:
+                joint = Joint(
+                    name=data['name'],
+                    x=data['x'],
+                    y=data['y'],
+                    is_fixed=data['is_fixed'],
+                    on_circular_path=data['on_circular_path']
+                )
+                joints.append(joint)
+        return joints
+    
+    @classmethod
+    def find_links_by_mechanism(cls, mechanismName):
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanismName)
+        if result:
+            link_data = [x["links"] for x in result]
+
+        links = []
+        for data in link_data:
+            for link_info in data:
+                joint_a = Joint(
+                    name=link_info["joint_a"]["name"],
+                    x=link_info["joint_a"]["x"],
+                    y=link_info["joint_a"]["y"],
+                    is_fixed=link_info["joint_a"]["is_fixed"],
+                    on_circular_path=link_info["joint_a"]["on_circular_path"]
+                )
+                joint_b = Joint(
+                    name=link_info["joint_b"]["name"],
+                    x=link_info["joint_b"]["x"],
+                    y=link_info["joint_b"]["y"],
+                    is_fixed=link_info["joint_b"]["is_fixed"],
+                    on_circular_path=link_info["joint_b"]["on_circular_path"]
+                )
+                link = Link(
+                    name=link_info["name"],
+                    joint_a=joint_a,
+                    joint_b=joint_b,
+                    length=link_info["length"]
+                )
+                links.append(link)
+
+        return links
+
+
 
 
 if __name__ == "__main__":
@@ -306,8 +361,9 @@ if __name__ == "__main__":
     # s2 = Link("g", g2, g3)
 
     # joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
-    joint2 = Joint("2", x=0.0, y=0.0, on_circular_path=True)
+    #joint2 = Joint("2", x=0.0, y=0.0, on_circular_path=True)
 
-    print(joint1)
-    print(joint2)
+    #print(joint1)
+    #print(joint2)
+    print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
     
