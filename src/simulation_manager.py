@@ -52,7 +52,7 @@ class SimulationManager:
         Die Animation wird in einer temporären Datei gespeichert und anschließend in einen BytesIO-Puffer geladen.
         """
         n_frames = len(next(iter(self.trajectories.values())))
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots()          #fig, ax = plt.subplots(figsize=(8, 6))
         
         def update(frame):
             ax.clear()

@@ -347,9 +347,6 @@ class Mechanism:
 
         return links
 
-
-
-
 if __name__ == "__main__":
     # Beispiel zur Überprüfung
     # g1 = Joint("1", 0, 0)

@@ -14,8 +14,10 @@ st.title("Live- Editor")
 #col1, col2 = st.columns(2)
 #st.sidebar["side"]
 #tab1, tab2 = st.tabs(["Add", "Edit"])
-with st.sidebar:
 
+with st.sidebar:
+    st.title("Settings")
+    with st.form("add Point"):
     # ++++++ add new point ++++++
         st.write("add new Point")
         newNamePoint = st.text_input("name", key = "new_name_point")
@@ -25,7 +27,7 @@ with st.sidebar:
         newPointOnCircularPath = st.checkbox("is Point on Circular path?")
 
         #if newNamePoint
-        if st.button("add point", key= "addPoint"):
+        if st.form_submit_button("add point"):
             try: 
                 newNamePoint = Joint(newNamePoint, newXPoint, newYPoint, newPointFixed, newPointOnCircularPath)
                 newNamePoint.save()
@@ -33,6 +35,7 @@ with st.sidebar:
                 st.error("Error!")
         #else: st.error("Bitte Namen eingeben")
 
+    with st.form("add Line"):
     # ++++++ add new line ++++++
         all_points = Joint.find_all_joints()
         st.write("add new Link")
@@ -40,7 +43,7 @@ with st.sidebar:
         firstPointName = st.selectbox("select first Point",all_points)
         secondPointName = st.selectbox("select second Point",all_points)
 
-        if st.button("add link", key="addLink"):
+        if st.form_submit_button("add link"):
             firstPoint = Joint.find_by_name(firstPointName)                                               
             secondPoint = Joint.find_by_name(secondPointName)
             try: 
@@ -50,30 +53,13 @@ with st.sidebar:
             except:
                 st.error("Error!")
 
-    # ++++++ Alle Joints abrufen ++++++
-        all_joints_info = Joint.find_joints_info() 
-
-        if not all_joints_info:
-            st.warning("Noch keine Joints gespeichert.")
-        else:
-            df = pd.DataFrame(all_joints_info)
-            required_columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
-            st.write(df)
-
-    # ++++++ Alle Links abrufen ++++++
-        all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
-
-        if not  all_links_info:
-            st.warning("Noch keine Links gespeichert.")
-        else:
-            df1 = pd.DataFrame( all_links_info)
-            required_columns = ["name", "Joint A", "Joint B"]
-            st.write(df1)
+    # ++++++ New Mechanism ++++++
+    with st.form("New Mechanism"):
 
         newMechanismName = st.text_input("Mechanism name")
         newMechanism = Mechanism(newMechanismName, [], [])
-        if st.button("Save mech"):
 
+        if st.form_submit_button("Save mech"):
             for joint in Joint.find_joints_info():
                 joint = Joint.find_by_name(joint["name"]) 
                 if joint:
@@ -99,6 +85,24 @@ for link in Link.find_link_info():
     ax.legend()            # Fehlermeldung wenn keine Points oder links in Db. Eventuell schon behoben
 st.pyplot(fig)
 
+# ++++++ Alle Joints abrufen ++++++
+all_joints_info = Joint.find_joints_info() 
+if not all_joints_info:
+    st.warning("Noch keine Joints gespeichert.")
+else:
+    df = pd.DataFrame(all_joints_info)
+    required_columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
+    st.write(df)
+# ++++++ Alle Links abrufen ++++++
+all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
+if not  all_links_info:
+    st.warning("Noch keine Links gespeichert.")
+else:
+    df1 = pd.DataFrame( all_links_info)
+    required_columns = ["name", "Joint A", "Joint B"]
+    st.write(df1)
+
+
 st.header("360° Simulation & Animation")
 st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
 
@@ -116,10 +120,11 @@ if st.button("Run 360° Animation"):
         sim_manager.simulate_over_360(num_steps=360)
         # Erstelle die GIF-Animation
         gif_buf = sim_manager.create_animation()
-    st.image(gif_buf.read(), caption="Mechanism Animation", use_column_width=True)
+    st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width =True)
 
 
 if __name__ == "__main__":
+
 #    mech1 = Mechanism("Viergelenkkette",[c,p0,p1,p2],(l0,l1,l2))
 #     # print(s1.get_current_length())
 #     # print(m1.get_all_x())
