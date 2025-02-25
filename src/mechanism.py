@@ -63,32 +63,11 @@ class Joint:
             data = result[0]
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
-    
-    @classmethod
-    def find_joints_by_mechanism(cls, mechanismName):
-        qr = Query()
-        result = cls.db_connector.search(qr.mechanism == mechanismName)
-        jointslist = []
-        if result:
-            for joint in result:
-                jointInfo = Joint.find_by_name(joint)
-                # joint_info = {
-                #     "name": data["name"],
-                #     "x": data["x"],
-                #     "y": data["y"],
-                #     "is_fixed": data["is_fixed"],
-                #     "on_circular_path": data["on_circular_path"]
-                # }
-                jointslist.append(jointInfo)
 
-        return jointslist
+    def __str__(self):
+        return f"Joint {self.name} at ({self.x}, {self.y})"
 
 
-
-    def print_info(self):
-        print(f"Joint {self.name} at ({self.x}, {self.y})")
-
-# +++++++++++++ Link Class +++++++++++++
 class Link:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Links')
@@ -150,9 +129,9 @@ class Link:
         result = cls.db_connector.search(qr.mechanism == mechanismName)
         return [data["name"] for data in result]
 
-    # Optional: visualize or print info
-    def print_info(self):
-        print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
+
+    def __str__(self):
+        return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
 
 # +++++++++++++ Mechanism Class +++++++++++++
 class Mechanism:
@@ -235,6 +214,79 @@ class Mechanism:
             "driven_angle": self.driven_angle,
             "boundary_conditions": self.boundary_conditions
         }
+
+    def validate(self):
+        """
+        Prüft, ob der Mechanismus valide ist.
+        Gibt (True, "") zurück, wenn alles in Ordnung ist,
+        ansonsten (False, "Fehlermeldung").
+        """
+        # 1) Mindestens ein fixiertes Gelenk
+        fixed_joints = [j for j in self.joints if j.is_fixed]
+        if len(fixed_joints) == 0:
+            return False, "Keine fixierten Gelenke gefunden."
+        
+        # 2) Überprüfe, ob höchstens ein getriebenes Gelenk definiert ist
+        driven_joints = [j for j in self.joints if j.on_circular_path]
+        if len(driven_joints) > 1:
+            return False, "Mehr als ein getriebenes Gelenk definiert."
+        
+        # 3) Prüfe, ob der Mechanismus zusammenhängend ist
+        if not self._is_connected():
+            return False, "Mechanismus ist nicht zusammenhängend."
+        
+        # 4) Freiheitsgrad-Check 
+        n = len(self.joints)
+        m_BC_stat = 2 * len(fixed_joints)  # Anzahl der statischen Randbedingungen
+        m_BC_dyn = 2 if driven_joints else 0  # Anzahl der kinematischen Randbedingungen
+
+        # Filtere den Link, der zwischen einem fixierten und einem getriebenen Gelenk besteht.
+        constraint_links = [
+            link for link in self.links 
+            if not ((link.joint_a.is_fixed and link.joint_b.on_circular_path) or 
+                    (link.joint_b.is_fixed and link.joint_a.on_circular_path))
+        ]
+        m = len(constraint_links)  # Anzahl der Links, die als Zwang gelten
+
+        f = 2 * n - m_BC_stat - m_BC_dyn - m 
+        if f != 0:
+            return False, f"Mechanismus hat nicht den erwarteten Freiheitsgrad (F = {f})."
+
+        # 5) Prüfe, ob alle Link-Längen gültig sind
+        for link in self.links:
+            if link.length is None or link.length <= 0:
+                return False, f"Link {link.name} hat ungültige Länge."
+        return True, ""
+
+    def _is_connected(self):
+        """
+        Prüft, ob alle Gelenke im Mechanismus zusammenhängend sind.
+        """
+        # Erstelle eine Adjazenzliste: Knoten = Gelenk, Kanten = Verbindungen über Links
+        adj = {joint.name: [] for joint in self.joints}
+        for link in self.links:
+            a = link.joint_a.name
+            b = link.joint_b.name
+            adj[a].append(b)
+            adj[b].append(a)
+        
+        if not self.joints:
+            return True  # Kein Gelenk => trivial zusammenhängend
+
+        start = self.joints[0].name
+        visited = set()
+        queue = [start]
+        
+        while queue:
+            current = queue.pop(0)
+            if current not in visited:
+                visited.add(current)
+                for neighbor in adj[current]:
+                    if neighbor not in visited:
+                        queue.append(neighbor)
+        
+        return len(visited) == len(self.joints)
+
     @classmethod
     def find_all_mechs(cls):
         result = cls.db_connector.all()
@@ -253,10 +305,9 @@ if __name__ == "__main__":
     # s1.save()
     # s2 = Link("g", g2, g3)
 
-    # m1 = Mechanism([g1, g2, g3], [s1, s2])
+    # joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
+    joint2 = Joint("2", x=0.0, y=0.0, on_circular_path=True)
 
-    # print("Aktuelle Länge von s1:", s1.get_current_length())
-    # print("x-Koordinaten aller Gelenke:", m1.get_all_x())
-    # print("Erster Link:", m1.get_link())
-    #print(Mechanism.find_all_mechs())
-    pass
+    print(joint1)
+    print(joint2)
+    
