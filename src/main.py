@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from mechanism import Joint, Link, Mechanism
 from simulation_manager import SimulationManager
-
+from mechanism import FourBarLinkage
 
 # ++++++ Page Settings ++++++
 #st.set_page_config(layout="wide")
@@ -112,19 +112,26 @@ st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 
 
 #Erzeuge den SimulationManager (Singleton)
 mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
-sim_manager = SimulationManager(mech)
+fourbar = FourBarLinkage.create_default()
+sim_manager = SimulationManager(fourbar)
 # Der Mechanismus wird vom SimulationManager verwaltet:
 m1 = sim_manager.mechanism
 
 if st.button("Run 360° Animation"):
     with st.spinner("Simuliere und erstelle Animation..."):
         # Führe die Simulation durch (Speicherung der Trajektorien)
-        sim_manager.simulate_over_360(num_steps=360)
+        sim_manager.simulate_over_360(num_steps=36)
         # Erstelle die GIF-Animation
         gif_buf = sim_manager.create_animation()
         st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width =True)
 
+    st.session_state.simulation_done = True
 
+# Zeige den Export-Button nur, wenn die Simulation bereits durchgeführt wurde
+if st.session_state.get("simulation_done", False):
+    if st.button("Bahnkurven als CSV speichern"):
+        sim_manager.export_trajectories_to_csv("bahnkurven.csv")
+        st.success("Bahnkurven wurden erfolgreich als CSV gespeichert!")
 if __name__ == "__main__":
 
 #    mech1 = Mechanism("Viergelenkkette",[c,p0,p1,p2],(l0,l1,l2))

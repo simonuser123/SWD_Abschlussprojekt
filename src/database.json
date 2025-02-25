@@ -27,13 +27,6 @@
             "y": 0.0,
             "is_fixed": true,
             "on_circular_path": false
-        },
-        "5": {
-            "name": "p4",
-            "x": 10.0,
-            "y": 20.0,
-            "is_fixed": false,
-            "on_circular_path": false
         }
     },
     "Links": {
@@ -97,17 +90,10 @@
             "name": "Viergelenkkette",
             "joints": [
                 {
-                    "name": "p0",
-                    "x": 0.0,
+                    "name": "c",
+                    "x": -30.0,
                     "y": 0.0,
                     "is_fixed": true,
-                    "on_circular_path": false
-                },
-                {
-                    "name": "p1",
-                    "x": 10.0,
-                    "y": 35.0,
-                    "is_fixed": false,
                     "on_circular_path": false
                 },
                 {
@@ -118,8 +104,15 @@
                     "on_circular_path": true
                 },
                 {
-                    "name": "c",
-                    "x": -30.0,
+                    "name": "p1",
+                    "x": 10.0,
+                    "y": 35.0,
+                    "is_fixed": false,
+                    "on_circular_path": false
+                },
+                {
+                    "name": "p0",
+                    "x": 0.0,
                     "y": 0.0,
                     "is_fixed": true,
                     "on_circular_path": false
@@ -127,43 +120,7 @@
             ],
             "links": [
                 {
-                    "name": "l1",
-                    "joint_a": {
-                        "name": "p1",
-                        "x": 10.0,
-                        "y": 35.0,
-                        "is_fixed": false,
-                        "on_circular_path": false
-                    },
-                    "joint_b": {
-                        "name": "p2",
-                        "x": -25.0,
-                        "y": 10.0,
-                        "is_fixed": false,
-                        "on_circular_path": true
-                    },
-                    "length": 43.01162633521314
-                },
-                {
-                    "name": "l0",
-                    "joint_a": {
-                        "name": "p0",
-                        "x": 0.0,
-                        "y": 0.0,
-                        "is_fixed": true,
-                        "on_circular_path": false
-                    },
-                    "joint_b": {
-                        "name": "p1",
-                        "x": 10.0,
-                        "y": 35.0,
-                        "is_fixed": false,
-                        "on_circular_path": false
-                    },
-                    "length": 36.40054944640259
-                },
-                {
-                    "name": "l2",
+                    "name": "link1",
                     "joint_a": {
                         "name": "c",
                         "x": -30.0,
@@ -179,9 +136,63 @@
                         "on_circular_path": true
                     },
                     "length": 11.180339887498949
+                },
+                {
+                    "name": "link2",
+                    "joint_a": {
+                        "name": "p2",
+                        "x": -25.0,
+                        "y": 10.0,
+                        "is_fixed": false,
+                        "on_circular_path": true
+                    },
+                    "joint_b": {
+                        "name": "p1",
+                        "x": 10.0,
+                        "y": 35.0,
+                        "is_fixed": false,
+                        "on_circular_path": false
+                    },
+                    "length": 43.01162633521314
+                },
+                {
+                    "name": "link3",
+                    "joint_a": {
+                        "name": "p1",
+                        "x": 10.0,
+                        "y": 35.0,
+                        "is_fixed": false,
+                        "on_circular_path": false
+                    },
+                    "joint_b": {
+                        "name": "p0",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "is_fixed": true,
+                        "on_circular_path": false
+                    },
+                    "length": 36.40054944640259
+                },
+                {
+                    "name": "link4",
+                    "joint_a": {
+                        "name": "p0",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "is_fixed": true,
+                        "on_circular_path": false
+                    },
+                    "joint_b": {
+                        "name": "c",
+                        "x": -30.0,
+                        "y": 0.0,
+                        "is_fixed": true,
+                        "on_circular_path": false
+                    },
+                    "length": 30.0
                 }
             ],
-            "driven_angle": 0.0,
+            "driven_angle": 1.1071487177940904,
             "boundary_conditions": []
         }
     }

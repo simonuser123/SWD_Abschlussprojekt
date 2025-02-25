@@ -12,12 +12,15 @@ class KinematicsSimulator:
         self.mechanism = mechanism
         # Optimierbar sind jene Gelenke, die weder fix noch getrieben sind.
         self.free_joints = [joint for joint in self.mechanism.joints if (not joint.is_fixed) and (not joint.on_circular_path)]
-
-        # --------- wird glaube ich nicht benötigt -----------
+        # Debug-Ausgabe
+        print("[DEBUG] Gelenkattribute:")
+        for joint in self.mechanism.joints:
+            print(f"  - {joint.name}: is_fixed={joint.is_fixed}, on_circular_path={joint.on_circular_path}")
+        print("[DEBUG] Freie Gelenke:", [j.name for j in self.free_joints])
         # Stelle sicher, dass alle Links ihre Soll-Länge (ursprüngliche Länge) initialisiert haben.
-        #for link in self.mechanism.links:                           
-         #    if link.length is None:
-          #       link.initialize_self_lenght()
+        for link in self.mechanism.links:                           
+            if link.length is None:
+                link.initialize_self_lenght()
 
     def update_driven_joint(self):
         """

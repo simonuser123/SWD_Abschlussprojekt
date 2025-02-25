@@ -306,48 +306,49 @@ class Mechanism:
     
     @classmethod
     def find_joints_by_mechanism(cls, mechanismName):
-        '''Zuerst wird eine Liste von Listen aller Joints erstellt. Deshalb unten die zwei for schleifen'''
         qr = Query()
         result = cls.db_connector.search(qr.name == mechanismName)
-        if result:
-            joint_data = [x["joints"] for x in result]
+        if not result:
+            return []
+        
+        # Korrektur: Hole die Joint-Daten direkt aus dem Mechanismus-Eintrag
+        joint_data = result[0].get("joints", [])  # Direkter Zugriff auf "joints"
+        
         joints = []
-        for data_list in joint_data:
-            for data in data_list:
-                joint = Joint(
-                    name=data['name'],
-                    x=data['x'],
-                    y=data['y'],
-                    is_fixed=data['is_fixed'],
-                    on_circular_path=data['on_circular_path']
-                )
-                joints.append(joint)
+        for data in joint_data:
+            joint = Joint(
+                name=data['name'],
+                x=data['x'],
+                y=data['y'],
+                is_fixed=data['is_fixed'],
+                on_circular_path=data['on_circular_path']
+            )
+            joints.append(joint)
         return joints
     
     @classmethod
     def find_links_by_mechanism(cls, mechanismName):
         qr = Query()
         result = cls.db_connector.search(qr.name == mechanismName)
-        if result:
-            link_data = [x["links"] for x in result]
+        if not result:
+            return []
+
+        # Lade die Joints des Mechanismus (bereits vorhanden)
+        mechanism_joints = cls.find_joints_by_mechanism(mechanismName)
+        # Erstelle ein Dictionary für schnellen Zugriff: {joint_name: joint_object}
+        joint_dict = {joint.name: joint for joint in mechanism_joints}
 
         links = []
-        for data in link_data:
-            for link_info in data:
-                joint_a = Joint(
-                    name=link_info["joint_a"]["name"],
-                    x=link_info["joint_a"]["x"],
-                    y=link_info["joint_a"]["y"],
-                    is_fixed=link_info["joint_a"]["is_fixed"],
-                    on_circular_path=link_info["joint_a"]["on_circular_path"]
-                )
-                joint_b = Joint(
-                    name=link_info["joint_b"]["name"],
-                    x=link_info["joint_b"]["x"],
-                    y=link_info["joint_b"]["y"],
-                    is_fixed=link_info["joint_b"]["is_fixed"],
-                    on_circular_path=link_info["joint_b"]["on_circular_path"]
-                )
+        for mech_entry in result:
+            link_data = mech_entry.get("links", [])
+            for link_info in link_data:
+                # Hole die Joint-Instanzen aus dem Mechanismus (nicht neu erstellen!)
+                joint_a = joint_dict.get(link_info["joint_a"]["name"])
+                joint_b = joint_dict.get(link_info["joint_b"]["name"])
+
+                if not joint_a or not joint_b:
+                    continue  # Fehlerbehandlung optional
+                
                 link = Link(
                     name=link_info["name"],
                     joint_a=joint_a,
@@ -355,8 +356,62 @@ class Mechanism:
                     length=link_info["length"]
                 )
                 links.append(link)
-
         return links
+    
+    @classmethod
+    def find_driven_angle_by_mechanism(cls, mechanismName):
+        """
+        Sucht in der Datenbank den Mechanismus mit dem angegebenen Namen
+        und gibt den gespeicherten driven_angle zurück.
+        Falls kein Mechanismus gefunden wird, wird None zurückgegeben.
+        """
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanismName)
+        if result:
+            return result[0].get("driven_angle", None)
+        return None
+
+
+class FourBarLinkage(Mechanism):
+    """
+    Eine spezialisierte Mechanism-Klasse, die eine
+    Standard-Viergelenkkette erzeugt.
+    Gelenk 1: Fix
+    Gelenk 2: Getrieben (auf Kreisbahn)
+    Gelenk 3: frei
+    Gelenk 4: Fix
+    Zusätzlich wird ein 'Ground-Link' eingefügt, um
+    die Kette zu schließen (4 Links).
+    """
+    @staticmethod
+    def create_default():
+        # Gelenk 1: fix
+        joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
+        # Gelenk 2: getrieben (auf Kreisbahn um Gelenk 1)
+        joint2 = Joint("2", x=-25.0, y=10.0, is_fixed=False, on_circular_path=True)
+        # Gelenk 3: frei
+        joint3 = Joint("3", x=10.0, y=35.0, is_fixed=False)
+        # Gelenk 4: fix
+        joint4 = Joint("4", x=0.0, y=0.0, is_fixed=True)
+
+        # Vier Links: 1→2, 2→3, 3→4, 4→1
+        link1 = Link("link1", joint1, joint2)
+        link2 = Link("link2", joint2, joint3)
+        link3 = Link("link3", joint3, joint4)
+        link4 = Link("link4", joint4, joint1)
+
+        # Soll-Längen anhand der aktuellen Positionen initialisieren
+        for link in [link1, link2, link3, link4]:
+            link.initialize_self_lenght()
+
+        # Mechanismus mit Name, Joints, Links und Anfangswinkel (z.B. arctan(10/5) ≈ 63.43°)
+        return FourBarLinkage(
+            name="Viergelenkkette",
+            joints=[joint1, joint2, joint3, joint4],
+            links=[link1, link2, link3, link4],
+            angle=np.arctan(10/5)
+        )
+
 
 if __name__ == "__main__":
     # Beispiel zur Überprüfung
