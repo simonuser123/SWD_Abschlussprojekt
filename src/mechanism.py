@@ -4,7 +4,9 @@ from serializer import serializer
 import math
 import numpy as np
 
+# +++++++++++++ Joint Class +++++++++++++
 class Joint:
+    ''' Create a Joint/ Point'''
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Joints')
 
@@ -61,11 +63,32 @@ class Joint:
             data = result[0]
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
+    
+    @classmethod
+    def find_joints_by_mechanism(cls, mechanismName):
+        qr = Query()
+        result = cls.db_connector.search(qr.mechanism == mechanismName)
+        jointslist = []
+        if result:
+            for joint in result:
+                jointInfo = Joint.find_by_name(joint)
+                # joint_info = {
+                #     "name": data["name"],
+                #     "x": data["x"],
+                #     "y": data["y"],
+                #     "is_fixed": data["is_fixed"],
+                #     "on_circular_path": data["on_circular_path"]
+                # }
+                jointslist.append(jointInfo)
+
+        return jointslist
+
+
 
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
 
-
+# +++++++++++++ Link Class +++++++++++++
 class Link:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Links')
@@ -120,12 +143,18 @@ class Link:
             link.length = data["length"]
             return link
         return None
-        
+    
+    @classmethod
+    def find_links_by_mechanism(cls, mechanismName):
+        qr = Query()
+        result = cls.db_connector.search(qr.mechanism == mechanismName)
+        return [data["name"] for data in result]
+
     # Optional: visualize or print info
     def print_info(self):
         print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
 
-
+# +++++++++++++ Mechanism Class +++++++++++++
 class Mechanism:
     db_connector = TinyDB(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.json'),
                            storage=serializer).table('Mechanism')
@@ -206,22 +235,28 @@ class Mechanism:
             "driven_angle": self.driven_angle,
             "boundary_conditions": self.boundary_conditions
         }
-    def load_from_db():
-        pass
+    @classmethod
+    def find_all_mechs(cls):
+        result = cls.db_connector.all()
+        if result:
+            return [x["name"] for x in result if "name" in x]
+        return None
 
 
 if __name__ == "__main__":
     # Beispiel zur Überprüfung
-    g1 = Joint("1", 0, 0)
-    g2 = Joint("2", 0, 10)
-    g3 = Joint("3", 10, 10)
+    # g1 = Joint("1", 0, 0)
+    # g2 = Joint("2", 0, 10)
+    # g3 = Joint("3", 10, 10)
 
-    s1 = Link("t", g1, g2)
-    s1.save()
-    s2 = Link("g", g2, g3)
+    # s1 = Link("t", g1, g2)
+    # s1.save()
+    # s2 = Link("g", g2, g3)
 
-    m1 = Mechanism([g1, g2, g3], [s1, s2])
+    # m1 = Mechanism([g1, g2, g3], [s1, s2])
 
-    print("Aktuelle Länge von s1:", s1.get_current_length())
-    print("x-Koordinaten aller Gelenke:", m1.get_all_x())
-    print("Erster Link:", m1.get_link())
+    # print("Aktuelle Länge von s1:", s1.get_current_length())
+    # print("x-Koordinaten aller Gelenke:", m1.get_all_x())
+    # print("Erster Link:", m1.get_link())
+    #print(Mechanism.find_all_mechs())
+    pass

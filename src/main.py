@@ -1,18 +1,28 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-from mechanism import Joint, Link, Mechanism
 import pandas as pd
 import numpy as np
+from mechanism import Joint, Link, Mechanism
+from simulation_manager import SimulationManager
+
 
 # ++++++ Page Settings ++++++
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
+
+
+# Erzeuge den SimulationManager (Singleton)
+mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
+sim_manager = SimulationManager(mech)
+# Der Mechanismus wird vom SimulationManager verwaltet:
+m1 = sim_manager.mechanism
+
 
 st.title("Überschrift!")
 
-col1, col2 = st.columns(2)
-with col1:
-    tab1, tab2 = st.tabs(["Add", "Edit"])
-    with tab1:
+#col1, col2 = st.columns(2)
+#st.sidebar["side"]
+#tab1, tab2 = st.tabs(["Add", "Edit"])
+with st.sidebar:
 
     # ++++++ add new point ++++++
         st.write("add new Point")
@@ -27,7 +37,6 @@ with col1:
             try: 
                 newNamePoint = Joint(newNamePoint, newXPoint, newYPoint, newPointFixed, newPointOnCircularPath)
                 newNamePoint.save()
-                #newMechanism.add_joint(newNamePoint)
             except:
                 st.error("Error!")
         #else: st.error("Bitte Namen eingeben")
@@ -86,17 +95,28 @@ with col1:
             newMechanism.save()
   
 
-with col2:
+#with col2:
 # ++++++ erstelle Plot ++++++
-    fig, ax = plt.subplots()
-    for points in Joint.find_joints_info():
-        ax.plot(points["x"],points["y"],'o',  label= points["name"])
-    for link in Link.find_link_info():
-        x = (link["joint_a"]["x"],link["joint_b"]["x"])
-        y = (link["joint_a"]["y"],link["joint_b"]["y"])
-        ax.plot(x,y)
-    #ax.legend()
-    st.pyplot(fig)
+fig, ax = plt.subplots()
+for points in Joint.find_joints_info():
+    ax.plot(points["x"],points["y"],'o',  label= points["name"])
+for link in Link.find_link_info():
+    x = (link["joint_a"]["x"],link["joint_b"]["x"])
+    y = (link["joint_a"]["y"],link["joint_b"]["y"])
+    ax.plot(x,y)
+#ax.legend()            # Fehlermeldung wenn keine Points oder links in Db
+st.pyplot(fig)
+
+st.header("360° Simulation & Animation")
+st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
+
+if st.button("Run 360° Animation"):
+    with st.spinner("Simuliere und erstelle Animation..."):
+        # Führe die Simulation durch (Speicherung der Trajektorien)
+        sim_manager.simulate_over_360(num_steps=360)
+        # Erstelle die GIF-Animation
+        gif_buf = sim_manager.create_animation()
+    st.image(gif_buf.read(), caption="Mechanism Animation", use_column_width=True)
 
 
 if __name__ == "__main__":
@@ -125,10 +145,10 @@ if __name__ == "__main__":
 #     p1.save()
 #     #g3= Joint(3,20,10)
 
-#     #s1= Link(p0,p1)
-#     #s2= Link(g2,g3)
+    # s1= Link(p0,p1)
+    # s2= Link(g2,g3)
 
-#     #m1= Mechanism([g1,g2,g3],[s1,s2])
+    # m1= Mechanism([g1,g2,g3],[s1,s2])
 #     #print(Joint.find_joints_info())
 #     firstP = Joint.find_by_name("p0")                                               
 #     secondP = Joint.find_by_name("p1")
@@ -138,4 +158,10 @@ if __name__ == "__main__":
 #     print(s1.get_current_length())
 
 #     #Joint(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"]
-    pass
+
+    #sim_manager = SimulationManager("Viergelenkkette")
+    print(Joint.find_joints_by_mechanism("Viergelenkkette"))
+# Der Mechanismus wird vom SimulationManager verwaltet:
+    #m1 = sim_manager.mechanism
+    #print(m1)
+    

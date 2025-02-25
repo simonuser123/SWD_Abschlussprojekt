@@ -2,38 +2,41 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import tempfile, os, io
+
+from tinydb import Query
 from mechanism import Mechanism, Joint, Link
 from kinematics_simulator import KinematicsSimulator
 
-def load_mechanism_from_db():
-    """
-    Lädt den Mechanismus aus der Datenbank, indem alle gespeicherten Joints und Links
-    rekonstruiert werden.
-    """
-    # Lade alle Gelenke (als Liste von Namen) und rekonstruiere diese über find_by_name
-    joint_names = Joint.find_all_joints()
+def load_mechanism_from_db(mechanismName):
+    # Lade die Gelenke und Links
+    joint_names = Joint.find_joints_by_mechanism(mechanismName)
     joints = []
     if joint_names:
         for name in joint_names:
             joint = Joint.find_by_name(name)
             if joint:
                 joints.append(joint)
-    
-    # Lade die Links: Nutze die Daten aus der Links-Tabelle, um Link-Objekte zu erzeugen.
-    link_data = Link.db_connector.all()
+    if not joints:
+        print(f"Error: no Joints in {mechanismName}")
+        return None
+
+    link_data = Link.find_links_by_mechanism(mechanismName)
     links = []
     for item in link_data:
-        # Rekonstruiere joint_a und joint_b anhand ihres Namens
         joint_a = Joint.find_by_name(item["joint_a"]["name"])
         joint_b = Joint.find_by_name(item["joint_b"]["name"])
         if joint_a and joint_b:
             link = Link(item["name"], joint_a, joint_b)
             link.length = item["length"]
             links.append(link)
-    
-    # Erstelle einen Mechanismus – hier kannst du z. B. einen Standardwert für driven_angle setzen.
-    mechanism = Mechanism(joints=joints, links=links, angle=0.0)
-    return mechanism
+
+    if not links:
+        print(f"Error: No links in mechanism {mechanismName}")
+        return None
+
+    # Rückgabe des Mechanismus
+    return Mechanism(joints=joints, links=links, angle=0.0)
+
 
 class SimulationManager:
     _instance = None
@@ -43,12 +46,12 @@ class SimulationManager:
             cls._instance = super(SimulationManager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, mechanismName:str ):
         # Statt FourBarLinkage.create_default() laden wir den Mechanismus aus der DB.
-        self.mechanism = load_mechanism_from_db()
+        self.mechanism = load_mechanism_from_db(mechanismName)
         self.simulator = KinematicsSimulator(self.mechanism)
         # Speichert die Bahnkurven der Gelenke als Dictionary {joint_name: [Positionen]}
-        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}
+       # self.trajectories = {joint.name: [] for joint in self.mechanism.joints}            ---------
 
     def simulate_over_360(self, num_steps=360):
         """
