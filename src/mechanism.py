@@ -45,6 +45,7 @@ class Joint:
     
     @classmethod
     def find_all_joints(cls):
+        """Gibt die Namen aller joints als String zurück."""
         result = cls.db_connector.all()
         if result:
             return [x["name"] for x in result if "name" in x]
@@ -66,9 +67,13 @@ class Joint:
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
 
-
-    def clear_db(cls):
-        pass
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
 
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
@@ -115,6 +120,14 @@ class Link:
         }
     
     @classmethod
+    def find_all_links(cls):
+        """Gibt die Namen aller links als String zurück."""
+        result = cls.db_connector.all()
+        if result:
+            return [x["name"] for x in result if "name" in x]
+        return []
+
+    @classmethod
     def find_link_info(self):
         return self.db_connector.all()
 
@@ -140,6 +153,15 @@ class Link:
     
     def print_info(self):
         print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
+
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
+
 
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
@@ -404,7 +426,6 @@ class Mechanism:
 
         return None
 
-
 class FourBarLinkage(Mechanism):
     """
     Eine spezialisierte Mechanism-Klasse, die eine
@@ -445,6 +466,25 @@ class FourBarLinkage(Mechanism):
             angle=np.arctan(10/5)
         )
 
+def clear_workspace():
+    all_joints = Joint.find_all_joints()
+    all_links = Link.find_all_links()
+    msg_j = None
+    msg_l = None
+    if all_joints:
+        for joint in all_joints:
+            Joint.clear_by_name(joint)
+            msg_j = "Joints cleared. "
+    else:
+        msg_j = "No Joints in Table. "
+
+    if all_links:
+        for link in all_links:
+            Link.clear_by_name(link)
+            msg_l = "Links cleared."
+    else:
+        msg_l = "No Links in Table."
+    return msg_j + msg_l
 
 if __name__ == "__main__":
     # Beispiel zur Überprüfung

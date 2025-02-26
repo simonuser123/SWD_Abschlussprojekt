@@ -11,13 +11,13 @@ from kinematics_simulator import KinematicsSimulator
 def load_mechanism_from_db(mechanismName):
     # Lade alle Gelenke für den Mechanismus
     joints = Mechanism.find_joints_by_mechanism(mechanismName)
-    print(f"[DEBUG] Geladene Gelenke für '{mechanismName}':")
+    #print(f"[DEBUG] Geladene Gelenke für '{mechanismName}':")
     for joint in joints:
         print(f"  - {joint}")
 
     # Lade alle Links für den Mechanismus
     links = Mechanism.find_links_by_mechanism(mechanismName)
-    print(f"[DEBUG] Geladene Links für '{mechanismName}':")
+    #print(f"[DEBUG] Geladene Links für '{mechanismName}':")
     for link in links:
         print(f"  - {link}")
     
@@ -27,7 +27,7 @@ def load_mechanism_from_db(mechanismName):
 
     # Lade den gespeicherten driven_angle
     driven_angle = Mechanism.find_driven_angle_by_mechanism(mechanismName)
-    print(f"[DEBUG] Geladener driven_angle für '{mechanismName}': {driven_angle}")
+    #print(f"[DEBUG] Geladener driven_angle für '{mechanismName}': {driven_angle}")
 
     # Erzeuge und gib den Mechanismus zurück
     return Mechanism(name=mechanismName, joints=joints, links=links, angle=driven_angle)

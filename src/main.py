@@ -2,11 +2,11 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from mechanism import Joint, Link, Mechanism
+from mechanism import Joint, Link, Mechanism, clear_workspace
 from simulation_manager import SimulationManager
 from mechanism import FourBarLinkage
 
-# ++++++ Page Settings ++++++
+# --------------- Page Settings ---------------
 #st.set_page_config(layout="wide")
 
 st.title("Live- Editor")
@@ -15,6 +15,7 @@ st.title("Live- Editor")
 #st.sidebar["side"]
 #tab1, tab2 = st.tabs(["Add", "Edit"])
 
+ # --------------- Arbeitsumgebung ---------------
 with st.sidebar:
     st.title("Settings")
     with st.form("Save Point"):
@@ -60,22 +61,23 @@ with st.sidebar:
         newMechanism = Mechanism(newMechanismName, [], [])
 
         if st.form_submit_button("Save mech"):
-            for joint in Joint.find_joints_info():
-                joint = Joint.find_by_name(joint["name"]) 
-                if joint:
-                    newMechanism.add_joint(joint)
+            if newMechanismName == "Viergelenkkette" or newMechanismName == "Strandbeest":
+                st.error("Unable to overwrite: Viergelenkkette or Strandbeest.")
 
-            for link in Link.find_link_info():
-                link = Link.find_by_name(link["name"])
-                if link:
-                    newMechanism.add_link(link)
+            else:
+                for joint in Joint.find_joints_info():
+                    joint = Joint.find_by_name(joint["name"]) 
+                    if joint:
+                        newMechanism.add_joint(joint)
 
-            newMechanism.save()
+                for link in Link.find_link_info():
+                    link = Link.find_by_name(link["name"])
+                    if link:
+                        newMechanism.add_link(link)
+                newMechanism.save()
+
   
-
-
-# ++++++++++ Live Editor +++++++++++++++++
-
+# --------------- Live Editor ---------------
 # ++++++ erstelle Plot ++++++
 fig, ax = plt.subplots()
 for points in Joint.find_joints_info():
@@ -88,8 +90,8 @@ if Joint.find_joints_info():
     ax.legend()            # Fehlermeldung wenn keine Points oder links in Db. Eventuell schon behoben
 st.pyplot(fig)
 
+ # ++++++ Tabellen für joints und Links ++++++
 tab1,tab2 = st.columns(2)
-
 with tab1:
     # ++++++ Alle Joints abrufen ++++++
     st.header("Points")
@@ -100,6 +102,14 @@ with tab1:
         columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
         df = pd.DataFrame(all_joints_info, columns=columns)
         st.write(df)
+
+    #Verknüpfung muss dann auch gelöscht werden!
+    # delete_joint = st.selectbox("Delete Joint", all_points)
+    # if st.button("Clear table"):
+    #     Joint.clear_by_name(delete_joint)
+
+    if st.button("Clear workspace"):
+        st.info(clear_workspace())      
 with tab2:
     # ++++++ Alle Links abrufen ++++++
     st.header("Links")
@@ -118,14 +128,13 @@ with tab2:
         df3 = pd.DataFrame(df1, columns=columns)
         st.write(df3)
 
-# ++++++++++++++++++ Animation Editor +++++++++++++++++++
+# --------------- Animation Editor ---------------
 st.header("360° Simulation & Animation")
 st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
 
 #Erzeuge den SimulationManager (Singleton)
 mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
 choosedMech = Mechanism.find_mech_by_name(mech)
-st.write(choosedMech)
 
 fourbar = FourBarLinkage.create_default()
 sim_manager = SimulationManager(mech)
