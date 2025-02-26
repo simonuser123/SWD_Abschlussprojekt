@@ -449,45 +449,6 @@ class Mechanism:
         else:
             return ("f{name} not found!")
 
-class FourBarLinkage(Mechanism):
-    """
-    Eine spezialisierte Mechanism-Klasse, die eine
-    Standard-Viergelenkkette erzeugt.
-    Gelenk 1: Fix
-    Gelenk 2: Getrieben (auf Kreisbahn)
-    Gelenk 3: frei
-    Gelenk 4: Fix
-    Zusätzlich wird ein 'Ground-Link' eingefügt, um
-    die Kette zu schließen (4 Links).
-    """
-    @staticmethod
-    def create_default():
-        # Gelenk 1: fix
-        joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
-        # Gelenk 2: getrieben (auf Kreisbahn um Gelenk 1)
-        joint2 = Joint("2", x=-25.0, y=10.0, is_fixed=False, on_circular_path=True)
-        # Gelenk 3: frei
-        joint3 = Joint("3", x=10.0, y=35.0, is_fixed=False)
-        # Gelenk 4: fix
-        joint4 = Joint("4", x=0.0, y=0.0, is_fixed=True)
-
-        # Vier Links: 1→2, 2→3, 3→4, 4→1
-        link1 = Link("link1", joint1, joint2)
-        link2 = Link("link2", joint2, joint3)
-        link3 = Link("link3", joint3, joint4)
-        link4 = Link("link4", joint4, joint1)
-
-        # Soll-Längen anhand der aktuellen Positionen initialisieren
-        for link in [link1, link2, link3, link4]:
-            link.initialize_self_lenght()
-
-        # Mechanismus mit Name, Joints, Links und Anfangswinkel (z.B. arctan(10/5) ≈ 63.43°)
-        return FourBarLinkage(
-            name="Viergelenkkette",
-            joints=[joint1, joint2, joint3, joint4],
-            links=[link1, link2, link3, link4],
-            angle=np.arctan(10/5)
-        )
 
 def clear_workspace():
     all_joints = Joint.find_all_joints()

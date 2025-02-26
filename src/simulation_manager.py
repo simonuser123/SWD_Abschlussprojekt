@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 import tempfile, os, io
 
 from tinydb import Query
-from mechanism import Mechanism, Joint, Link, FourBarLinkage
+from mechanism import Mechanism, Joint, Link
 from kinematics_simulator import KinematicsSimulator
 
 def load_mechanism_from_db(mechanismName):
