@@ -106,7 +106,15 @@ if st.session_state["state"] == "Live_Editor":
                         link_obj = Link.find_by_name(link["name"])
                         if link_obj:
                             newMechanism.add_link(link_obj)
-                    newMechanism.save()
+                    is_valid, validation_msg = newMechanism.validate()
+                    if is_valid:
+                        newMechanism.save()
+                        st.success(f"{newMechanismName} saved")
+                    else:
+                        st.error("Invalid mechanism")
+                        st.error(validation_msg)
+
+
         # st.write(" ")
         # st.write(" ")
         st.divider()
