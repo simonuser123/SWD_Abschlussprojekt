@@ -84,27 +84,39 @@ for link in Link.find_link_info():
     x = (link["joint_a"]["x"],link["joint_b"]["x"])
     y = (link["joint_a"]["y"],link["joint_b"]["y"])
     ax.plot(x,y)
+if Joint.find_joints_info():
     ax.legend()            # Fehlermeldung wenn keine Points oder links in Db. Eventuell schon behoben
 st.pyplot(fig)
 
-# ++++++ Alle Joints abrufen ++++++
-all_joints_info = Joint.find_joints_info() 
-if not all_joints_info:
-    st.warning("Noch keine Joints gespeichert.")
-else:
-    df = pd.DataFrame(all_joints_info)
-    required_columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
-    st.write(df)
-# ++++++ Alle Links abrufen ++++++
-all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
-if not  all_links_info:
-    st.warning("Noch keine Links gespeichert.")
-#else:
-    #for links in all_links_info:
-     #   df1 = pd.DataFrame(link["name"],link["joint_a"]["name"],link["joint_b"]["name"])
-    #df1 = pd.DataFrame(all_links_info)
-    #required_columns = ["name","Joint a", "Joint B"]
-    #st.write(df1)
+tab1,tab2 = st.columns(2)
+
+with tab1:
+    # ++++++ Alle Joints abrufen ++++++
+    st.header("Points")
+    all_joints_info = Joint.find_joints_info() 
+    if not all_joints_info:
+        st.warning("Noch keine Joints gespeichert.")
+    else:
+        columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
+        df = pd.DataFrame(all_joints_info, columns=columns)
+        st.write(df)
+with tab2:
+    # ++++++ Alle Links abrufen ++++++
+    st.header("Links")
+    all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
+    if not  all_links_info:
+        st.warning("Noch keine Links gespeichert.")
+    else:
+        df1 = []
+        for links in all_links_info:
+            name = links["name"]
+            joint_a = links["joint_a"]["name"]
+            joint_b = links["joint_b"]["name"]
+            length = links["length"]
+            df1.append([name,joint_a,joint_b,length])
+        columns=["Name", "Joint A", "Joint B", "Length"]
+        df3 = pd.DataFrame(df1, columns=columns)
+        st.write(df3)
 
 # ++++++++++++++++++ Animation Editor +++++++++++++++++++
 st.header("360° Simulation & Animation")

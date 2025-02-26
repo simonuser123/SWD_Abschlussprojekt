@@ -66,6 +66,10 @@ class Joint:
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
 
+
+    def clear_db(cls):
+        pass
+
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
     
