@@ -32,6 +32,7 @@ with st.sidebar:
             try: 
                 newNamePoint = Joint(newNamePoint, newXPoint, newYPoint, newPointFixed, newPointOnCircularPath)
                 newNamePoint.save()
+                Link.update_link()
             except:
                 st.error("Error!")
         #else: st.error("Bitte Namen eingeben")
@@ -76,12 +77,24 @@ with st.sidebar:
                         newMechanism.add_link(link)
                 newMechanism.save()
 
+    with st.form("DeleteMech"):
+        name = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
+        if st.form_submit_button("Delete"):
+            if name == "Viergelenkkette" or name == "Strandbeest":
+                st.error("Unable to delete: Viergelenkkette or Strandbeest.")
+            else:
+                Mechanism.clear_by_name(name)
+                st.success(f"{name} deleted")
+                st.rerun()
+
   
 # --------------- Live Editor ---------------
 # ++++++ erstelle Plot ++++++
 fig, ax = plt.subplots()
 for points in Joint.find_joints_info():
-    ax.plot(points["x"],points["y"],'o',  label= points["name"])
+    ax.plot(points["x"], points["y"], 'o')  # Punkt plotten
+    ax.text(points["x"], points["y"], points["name"], fontsize=10, ha='right', va='bottom')
+
 for link in Link.find_link_info():
     x = (link["joint_a"]["x"],link["joint_b"]["x"])
     y = (link["joint_a"]["y"],link["joint_b"]["y"])
@@ -89,6 +102,7 @@ for link in Link.find_link_info():
 if Joint.find_joints_info():
     ax.legend()            # Fehlermeldung wenn keine Points oder links in Db. Eventuell schon behoben
 st.pyplot(fig)
+
 
  # ++++++ Tabellen für joints und Links ++++++
 tab1,tab2 = st.columns(2)
@@ -109,7 +123,9 @@ with tab1:
     #     Joint.clear_by_name(delete_joint)
 
     if st.button("Clear workspace"):
-        st.info(clear_workspace())      
+        clear_workspace()
+        st.rerun()
+
 with tab2:
     # ++++++ Alle Links abrufen ++++++
     st.header("Links")

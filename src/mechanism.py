@@ -162,6 +162,21 @@ class Link:
         else:
             return ("f{name} not found!")
 
+    @classmethod
+    def update_link(cls):
+        """Aktualisiert den Link."""
+        all_links = cls.db_connector.all()
+
+        for link_data in all_links:
+            link_name = link_data["name"]
+            joint_a = Joint.find_by_name(link_data["joint_a"]["name"])
+            joint_b = Joint.find_by_name(link_data["joint_b"]["name"])
+
+            if joint_a and joint_b:
+                updated_link = Link(link_name, joint_a, joint_b)
+                updated_link.initialize_self_lenght() 
+                updated_link.save() 
+
 
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
@@ -426,6 +441,14 @@ class Mechanism:
 
         return None
 
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
+
 class FourBarLinkage(Mechanism):
     """
     Eine spezialisierte Mechanism-Klasse, die eine
@@ -486,22 +509,3 @@ def clear_workspace():
         msg_l = "No Links in Table."
     return msg_j + msg_l
 
-if __name__ == "__main__":
-    # Beispiel zur Überprüfung
-    # g1 = Joint("1", 0, 0)
-    # g2 = Joint("2", 0, 10)
-    # g3 = Joint("3", 10, 10)
-
-    # s1 = Link("t", g1, g2)
-    # s1.save()
-    # s2 = Link("g", g2, g3)
-
-    # joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
-    #joint2 = Joint("2", x=0.0, y=0.0, on_circular_path=True)
-
-    #print(joint1)
-    #print(joint2)
-    print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
-    print(Mechanism.find_links_by_mechanism("Viergelenkkette"))
-
-    
