@@ -110,7 +110,7 @@ class SimulationManager:
             for joint_name, positions in self.trajectories.items():
                 xs = [p[0] for p in positions[:frame+1]]
                 ys = [p[1] for p in positions[:frame+1]]
-                ax.plot(xs, ys, '--', label=f"Trajectory {joint_name}")
+                ax.plot(xs, ys, '-', label=f"Trajectory {joint_name}")
             ax.set_xlim(x_min, x_max)
             ax.set_ylim(y_min, y_max)
             ax.set_title(f"Frame {frame+1}/{n_frames}")

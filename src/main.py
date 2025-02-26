@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from mechanism import Joint, Link, Mechanism, clear_workspace
 from simulation_manager import SimulationManager
-from mechanism import FourBarLinkage
 
 # --------------- Page Settings ---------------
 # st.set_page_config(layout="wide")
@@ -115,7 +114,6 @@ if st.session_state["state"] == "Live_Editor":
         # st.write(" ")
         st.title(":material/delete: Remove Mechanism")
         with st.form("DeleteMech"):
-            st.write("Delete a Mechanism")
             name = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
             if st.form_submit_button(":material/delete: Delete"):
                 if name == "Viergelenkkette" or name == "Strandbeest":
@@ -194,24 +192,26 @@ if st.session_state["state"] == "Animation":
     st.header(":material/animated_images: Simulation & Animation")
     st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
         
-    # Erzeuge den SimulationManager (Singleton)
     mech = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
     choosedMech = Mechanism.find_mech_by_name(mech)
     
-    fourbar = FourBarLinkage.create_default()
     sim_manager = SimulationManager(mech)
     m1 = sim_manager.mechanism
     
     if st.button(":material/play_circle: Run Animation"):
         with st.spinner("Simuliere und erstelle Animation..."):
-            sim_manager.simulate_over_360(num_steps=36)
-            gif_buf = sim_manager.create_animation()
+            col1, col2, col3 = st.columns([1, 4, 1])  # Mittlere Spalte größer machen für bessere Zentrierung
+            with col2:
+                sim_manager.simulate_over_360(num_steps=36)
+                gif_buf = sim_manager.create_animation()
+                gif_path = "mechanism_animation.gif"
 
-            gif_path = "mechanism_animation.gif"
-            with open(gif_path, "wb") as gif_file:
-                gif_file.write(gif_buf.getvalue())  # Speichere die Bytes in eine Datei
+                gif_bytes = gif_buf.getvalue()  # Einmaliger Ladevorgang
 
-            st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width=True)
+                st.image(gif_bytes, caption="Mechanism Animation", use_container_width=True)
+
+                with open(gif_path, "wb") as gif_file:
+                    gif_file.write(gif_bytes)  # Verwende gif_bytes zum Speichern
 
             with open(gif_path, "rb") as gif_file:
                 st.download_button(
@@ -220,8 +220,8 @@ if st.session_state["state"] == "Animation":
                     file_name="mechanism_animation.gif",
                     mime="image/gif"
                 )
-
-    st.session_state.simulation_done = True
+                
+        st.session_state.simulation_done = True
 
         
     if st.session_state.get("simulation_done", False):
@@ -229,3 +229,7 @@ if st.session_state["state"] == "Animation":
             sim_manager.export_trajectories_to_csv("bahnkurven.csv")
             st.success("Bahnkurven wurden erfolgreich als CSV gespeichert!")
 
+    if st.session_state.get("simulation_done", False):
+        if st.button(":material/cancel: Animation abbrechen"):
+            st.session_state.simulation_done = False
+            st.rerun()
