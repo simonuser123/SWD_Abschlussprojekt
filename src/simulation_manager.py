@@ -12,8 +12,6 @@ def load_mechanism_from_db(mechanismName):
     joints = Mechanism.find_joints_by_mechanism(mechanismName)
     links = Mechanism.find_links_by_mechanism(mechanismName)
 
-
-    # Rückgabe des Mechanismus
     return Mechanism(name = mechanismName, joints=joints, links=links, angle=0.0)
 
 
@@ -25,12 +23,14 @@ class SimulationManager:
             cls._instance = super(SimulationManager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, mechanismName:str ):
-        # Statt FourBarLinkage.create_default() laden wir den Mechanismus aus der DB.
+    def __init__(self, mechanismName: str):
+        print(" ... SimulationManager erstellt!")  # Debug
         self.mechanism = load_mechanism_from_db(mechanismName)
+        print(f"... Mechanismus geladen: {self.mechanism}")
         self.simulator = KinematicsSimulator(self.mechanism)
-        # Speichert die Bahnkurven der Gelenke als Dictionary {joint_name: [Positionen]}
-        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}   
+        print("...KinematicsSimulator erstellt!")  # Debug
+        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}
+
 
     def simulate_over_360(self, num_steps=360):
         """

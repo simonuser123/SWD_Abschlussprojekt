@@ -8,12 +8,8 @@ from simulation_manager import SimulationManager
 
 # ++++++ Page Settings ++++++
 #st.set_page_config(layout="wide")
-
 st.title("Live- Editor")
 
-#col1, col2 = st.columns(2)
-#st.sidebar["side"]
-#tab1, tab2 = st.tabs(["Add", "Edit"])
 
 with st.sidebar:
     st.title("Settings")
@@ -99,12 +95,12 @@ else:
 all_links_info = Link.find_link_info()  # Alle gespeicherten Joints abrufen
 if not  all_links_info:
     st.warning("Noch keine Links gespeichert.")
-#else:
+else:
     #for links in all_links_info:
      #   df1 = pd.DataFrame(link["name"],link["joint_a"]["name"],link["joint_b"]["name"])
-    #df1 = pd.DataFrame(all_links_info)
-    #required_columns = ["name","Joint a", "Joint B"]
-    #st.write(df1)
+    df1 = pd.DataFrame(all_links_info)
+    required_columns = ["name","Joint a", "Joint B"]
+    st.write(df1)
 
 # ++++++++++++++++++ Animation Editor +++++++++++++++++++
 st.header("360° Simulation & Animation")
@@ -124,53 +120,3 @@ if st.button("Run 360° Animation"):
         gif_buf = sim_manager.create_animation()
         st.image(gif_buf.read(), caption="Mechanism Animation", use_container_width =True)
 
-
-if __name__ == "__main__":
-
-#    mech1 = Mechanism("Viergelenkkette",[c,p0,p1,p2],(l0,l1,l2))
-#     # print(s1.get_current_length())
-#     # print(m1.get_all_x())
-#     # print(m1.get_all_y())
-
-# # #++++++++++++++++++++++++++++++++++
-#
-    # p0.save()
-    # p1= Joint("p1",1,1)
-    # p1.save()
-    # s1= Link("s1",p0,p1)
-    # s1.save()
-    # for links in Link.find_link_info():
-    #    # print(links)
-    #     print(links["joint_a"]["x"])
-#     #print(Joint.find_all_joints())
-#     #print(Joint.find_joints_info())
-#     #print(p0.get_position())
-#     for points in Joint.find_joints_info():
-#         print(points['name'])
-#     p1= Joint(2,10,10)
-#     p0.save()
-#     p1.save()
-#     #g3= Joint(3,20,10)
-
-    # s1= Link(p0,p1)
-    # s2= Link(g2,g3)
-
-    # m1= Mechanism([g1,g2,g3],[s1,s2])
-#     #print(Joint.find_joints_info())
-#     firstP = Joint.find_by_name("p0")                                               
-#     secondP = Joint.find_by_name("p1")
-
-#     s1=Link("test", firstP,secondP)
-#     s1.save()
-#     print(s1.get_current_length())
-
-#     #Joint(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"]
-
-    #sim_manager = SimulationManager("Viergelenkkette")
-    #print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
-    #print(Mechanism.find_links_by_mechanism("Viergelenkkette"))
-
-# Der Mechanismus wird vom SimulationManager verwaltet:
-    #m1 = sim_manager.mechanism
-    #print(m1)
-    pass

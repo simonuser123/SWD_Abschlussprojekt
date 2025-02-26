@@ -63,6 +63,21 @@ class Joint:
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
     
+    @classmethod
+    def find_joints_by_mechanism(cls, mechanismName):
+        """
+        Ruft alle Gelenke eines bestimmten Mechanismus aus der Datenbank ab.
+        """
+        qr = Query()
+        result = cls.db_connector.search(qr.mechanism == mechanismName)
+
+        if not result:
+            print(f"Keine Gelenke für Mechanismus '{mechanismName}' gefunden.")
+            return []
+
+        return [joint["name"] for joint in result]
+
+
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
 
@@ -326,37 +341,38 @@ class Mechanism:
     
     @classmethod
     def find_links_by_mechanism(cls, mechanismName):
+        """
+        Lädt alle Links für einen Mechanismus und stellt sicher, dass sie bestehende Joint-Instanzen nutzen.
+        """
         qr = Query()
         result = cls.db_connector.search(qr.name == mechanismName)
-        if result:
-            link_data = [x["links"] for x in result]
+
+        if not result:
+            print(f"Fehler: Kein Mechanismus mit dem Namen {mechanismName} gefunden!")
+            return []
+
+        link_data = result[0].get("links", [])  # Hole die gespeicherten Links aus der Datenbank
+
+        # Lade alle Joint-Instanzen nur einmal und speichere sie in einem Dictionary
+        joints = cls.find_joints_by_mechanism(mechanismName)
+        joint_dict = {joint.name: joint for joint in joints}
 
         links = []
-        for data in link_data:
-            for link_info in data:
-                joint_a = Joint(
-                    name=link_info["joint_a"]["name"],
-                    x=link_info["joint_a"]["x"],
-                    y=link_info["joint_a"]["y"],
-                    is_fixed=link_info["joint_a"]["is_fixed"],
-                    on_circular_path=link_info["joint_a"]["on_circular_path"]
-                )
-                joint_b = Joint(
-                    name=link_info["joint_b"]["name"],
-                    x=link_info["joint_b"]["x"],
-                    y=link_info["joint_b"]["y"],
-                    is_fixed=link_info["joint_b"]["is_fixed"],
-                    on_circular_path=link_info["joint_b"]["on_circular_path"]
-                )
-                link = Link(
-                    name=link_info["name"],
-                    joint_a=joint_a,
-                    joint_b=joint_b,
-                    length=link_info["length"]
-                )
+        for link_info in link_data:
+            # Hole die existierenden Joint-Instanzen aus dem Dictionary
+            joint_a = joint_dict.get(link_info["joint_a"]["name"])
+            joint_b = joint_dict.get(link_info["joint_b"]["name"])
+
+            if joint_a and joint_b:
+                # Erstelle ein neues Link-Objekt mit den geladenen Joint-Referenzen
+                link = Link(link_info["name"], joint_a, joint_b)
+                link.length = link_info["length"]  # Setze die Länge aus der Datenbank
                 links.append(link)
+            else:
+                print(f"Fehler: Konnte Joint {link_info['joint_a']['name']} oder {link_info['joint_b']['name']} nicht finden!")
 
         return links
+    
 
 if __name__ == "__main__":
     # Beispiel zur Überprüfung
