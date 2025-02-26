@@ -76,6 +76,7 @@ class SimulationManager:
                 self.trajectories[joint.name].append((joint.x, joint.y))
             # (Optional) Debug: Überprüfe, ob sich die Positionen ändern
             # print(f"Angle: {theta:.2f}, Positions: {[ (j.name, j.x, j.y) for j in self.mechanism.joints ]}")
+        #print("[DEBUG] Trajoktorieren", self.trajectories)
         return angles
 
     def create_animation(self):
@@ -128,34 +129,38 @@ class SimulationManager:
         os.remove(temp_filename)
         return buf
 
-    def export_trajectories_to_csv(self, filename):
-        """
-        Exportiert die gespeicherten Bahnkurven (self.trajectories) als CSV-Datei.
-        Jede Zeile entspricht einem Simulationsschritt, beginnend mit einem Frame-Index,
-        gefolgt von je zwei Spalten pro Gelenk (x- und y-Wert).
-        """
-        if not self.trajectories:
-            print("Keine Trajektorien vorhanden!")
-            return
+    def export_trajectories_to_csv(self):
+        try:
+            if not self.trajectories:
+                return b""  # Leere Bytes statt None
 
-        # Annahme: Alle Gelenke haben die gleiche Anzahl an Frames
-        num_frames = len(next(iter(self.trajectories.values())))
-        joint_names = list(self.trajectories.keys())
+            # Prüfe, ob Trajektorien vorhanden sind
+            if not any(len(traj) > 0 for traj in self.trajectories.values()):
+                return b""
 
-        with open(filename, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            # Erzeuge die Header-Zeile
+            # Generiere CSV-Daten
+            output_str = io.StringIO()
+            writer = csv.writer(output_str)
+
+            # Header
             header = ["Frame"]
+            joint_names = list(self.trajectories.keys())
             for name in joint_names:
                 header.extend([f"{name}_x", f"{name}_y"])
             writer.writerow(header)
 
-            # Schreibe pro Frame die Positionen aller Gelenke
+            # Daten
+            num_frames = len(next(iter(self.trajectories.values())))
             for i in range(num_frames):
                 row = [i]
                 for name in joint_names:
                     x, y = self.trajectories[name][i]
-                    row.extend([x, y])
+                    row.extend([float(x), float(y)])
                 writer.writerow(row)
-        print(f"Trajektorien wurden erfolgreich in '{filename}' exportiert.")
-        
+
+            # Konvertiere zu Bytes
+            return output_str.getvalue().encode("utf-8")
+
+        except Exception as e:
+            print(f"Fehler beim CSV-Export: {e}")
+            return b""  

@@ -200,36 +200,38 @@ if st.session_state["state"] == "Animation":
     
     if st.button(":material/play_circle: Run Animation"):
         with st.spinner("Simuliere und erstelle Animation..."):
-            col1, col2, col3 = st.columns([1, 4, 1])  # Mittlere Spalte größer machen für bessere Zentrierung
-            with col2:
-                sim_manager.simulate_over_360(num_steps=36)
-                gif_buf = sim_manager.create_animation()
-                gif_path = "mechanism_animation.gif"
-
-                gif_bytes = gif_buf.getvalue()  # Einmaliger Ladevorgang
-
-                st.image(gif_bytes, caption="Mechanism Animation", use_container_width=True)
-
-                with open(gif_path, "wb") as gif_file:
-                    gif_file.write(gif_bytes)  # Verwende gif_bytes zum Speichern
-
-            with open(gif_path, "rb") as gif_file:
-                st.download_button(
-                    label=":material/download: Animation herunterladen",
-                    data=gif_file,
-                    file_name="mechanism_animation.gif",
-                    mime="image/gif"
-                )
-                
+            sim_manager.simulate_over_360(num_steps=36)
+            print("Anzahl Frames:", len(next(iter(sim_manager.trajectories.values()))))
+            gif_buf = sim_manager.create_animation()
+            # Speichere die erzeugten GIF-Bytes in st.session_state
+            st.session_state["animation_bytes"] = gif_buf.getvalue()
         st.session_state.simulation_done = True
 
-        
+    # Prüfe, ob wir schon Animationsergebnisse haben, und zeige diese an:
+    if "animation_bytes" in st.session_state and st.session_state["animation_bytes"]:
+        col1, col2, col3 = st.columns([1, 4, 1])  # Mittlere Spalte größer machen für bessere Zentrierung
+        with col2:
+            st.image(st.session_state["animation_bytes"], caption=f"{choosedMech.name} Animation", use_container_width=True)
+        st.download_button(
+            label=":material/download: Animation herunterladen",
+            data=st.session_state["animation_bytes"],
+            file_name="mechanism_animation.gif",
+            mime="image/gif"
+        )
+
     if st.session_state.get("simulation_done", False):
-        if st.button(":material/save: Bahnkurven als CSV speichern"):
-            sim_manager.export_trajectories_to_csv("bahnkurven.csv")
-            st.success("Bahnkurven wurden erfolgreich als CSV gespeichert!")
+        csv_bytes = sim_manager.export_trajectories_to_csv()
+        st.write("Debug - CSV Bytes:", csv_bytes)  # Debug-Ausgabe
+        if csv_bytes:
+            st.download_button(
+                label=":material/download: CSV herunterladen",
+                data=csv_bytes,
+                file_name="bahnkurven.csv",
+                mime="text/csv"
+            )
 
     if st.session_state.get("simulation_done", False):
         if st.button(":material/cancel: Animation abbrechen"):
             st.session_state.simulation_done = False
+            st.session_state["animation_bytes"] = None
             st.rerun()
