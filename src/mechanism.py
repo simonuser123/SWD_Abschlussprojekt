@@ -370,6 +370,35 @@ class Mechanism:
         if result:
             return result[0].get("driven_angle", None)
         return None
+    
+    @classmethod
+    def find_mech_by_name(cls, mechanism_name):
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanism_name)
+
+        if result:
+            mech_data = result[0]
+            joints = [Joint(
+                name=j["name"], 
+                x=j["x"], 
+                y=j["y"], 
+                is_fixed=j["is_fixed"], 
+                on_circular_path=j["on_circular_path"]
+            ) for j in mech_data["joints"]]
+
+            joint_dict = {joint.name: joint for joint in joints}
+            links = []
+            for l in mech_data["links"]:
+                joint_a = joint_dict.get(l["joint_a"]["name"])
+                joint_b = joint_dict.get(l["joint_b"]["name"])
+                if joint_a and joint_b:
+                    link = Link(l["name"], joint_a, joint_b, l["length"])
+                    links.append(link)
+
+            new = Mechanism(name=mech_data["name"],joints=joints,links=links)
+            return new
+
+        return None
 
 
 class FourBarLinkage(Mechanism):

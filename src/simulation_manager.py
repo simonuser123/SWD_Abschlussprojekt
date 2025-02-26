@@ -43,8 +43,8 @@ class SimulationManager:
 
     def __init__(self, mechanismName:str ):
         # Statt FourBarLinkage.create_default() laden wir den Mechanismus aus der DB.
-        self.mechanism = FourBarLinkage.create_default()  # Statische Fabrikmethode, siehe unten
-        #self.mechanism = load_mechanism_from_db(mechanismName)
+        #self.mechanism = FourBarLinkage.create_default()  # Statische Fabrikmethode, siehe unten
+        self.mechanism = Mechanism.find_mech_by_name(mechanismName)
         print(f"Debug Mechanism: {self.mechanism.joints}")
         #for joint in self.mechanism.joints:
         #    print(f"Joint {joint.name}: is_fixed={joint.is_fixed}, on_circular_path={joint.on_circular_path}, initial pos=({joint.x}, {joint.y})")

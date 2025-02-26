@@ -112,8 +112,11 @@ st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 
 
 #Erzeuge den SimulationManager (Singleton)
 mech = st.selectbox("select mechanism",Mechanism.find_all_mechs())
+choosedMech = Mechanism.find_mech_by_name(mech)
+st.write(choosedMech)
+
 fourbar = FourBarLinkage.create_default()
-sim_manager = SimulationManager(fourbar)
+sim_manager = SimulationManager(mech)
 # Der Mechanismus wird vom SimulationManager verwaltet:
 m1 = sim_manager.mechanism
 
