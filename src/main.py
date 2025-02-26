@@ -110,8 +110,9 @@ if st.session_state["state"] == "Live_Editor":
                     newMechanism.save()
 
         with st.form("DeleteMech"):
+            st.write("Delete a Mechanism")
             name = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
-            if st.form_submit_button("Delete"):
+            if st.form_submit_button(":material/delete: Delete"):
                 if name == "Viergelenkkette" or name == "Strandbeest":
                     st.error("Unable to delete: Viergelenkkette or Strandbeest.")
                 else:
