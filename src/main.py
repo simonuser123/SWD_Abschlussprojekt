@@ -264,12 +264,8 @@ if st.session_state["state"] == "Animation":
                 )
 
         if st.session_state.get("simulation_done", False):
-            if st.button(":material/3d_rotation: Export to OpenSCAD"):
-                sim_manager.export_to_scad(
-                    filename=f"{choosedMech.name}.scad",
-                    joint_radius=5,  # Angepasst für bessere Sichtbarkeit
-                    link_thickness=6
-                )
+            if st.button(":material/download: Export to OpenSCAD"):
+                sim_manager.export_configuration_to_scad(filename=f"{choosedMech.name}.scad")
                 st.success(f"OpenSCAD-Datei {choosedMech.name}.scad generiert!")
 
         if st.session_state.get("simulation_done", False):
