@@ -3,10 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import tempfile, os, io
-
 from tinydb import Query
 from mechanism import Mechanism, Joint, Link
 from kinematics_simulator import KinematicsSimulator
+from solid import *
+from solid.utils import * 
 
 def load_mechanism_from_db(mechanismName):
     # Lade alle Gelenke für den Mechanismus
@@ -193,3 +194,37 @@ class SimulationManager:
     
         return round(effective_velocity, 4), round(step_length, 4), steps_per_revolution
     
+    def export_to_scad(self, filename="mechanism.scad", joint_radius=1, link_thickness=4):
+
+        components = []
+
+        # Gelenke als Kugeln
+        for joint in self.mechanism.joints:
+            components.append(
+                translate(v=[joint.x, joint.y, 0])(sphere(r=joint_radius))
+            )
+
+        # Links als Zylinder/Quader
+        for link in self.mechanism.links:
+            start = [link.joint_a.x, link.joint_a.y, 0]
+            end = [link.joint_b.x, link.joint_b.y, 0]
+            
+            # Vektorberechnung für Ausrichtung
+            dx = end[0] - start[0]
+            dy = end[1] - start[1]
+            length = (dx**2 + dy**2)**0.5
+            angle = np.degrees(np.arctan2(dy, dx))
+
+            components.append(
+                translate(start)(
+                    rotate([0, 0, angle])(
+                        translate([-link_thickness/2, 0, 0])(
+                            cube([link_thickness, length, link_thickness])
+                        )
+                    )
+                )
+            )
+
+        final_model = union()(*components)
+        scad_render_to_file(final_model, filename)
+        print(f"OpenSCAD-Modell nach {filename} exportiert.")
