@@ -215,13 +215,15 @@ if st.session_state["state"] == "Animation":
     mech = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
     choosedMech = Mechanism.find_mech_by_name(mech)
     
-    sim_manager = SimulationManager(mech)
+    if ("sim_manager" not in st.session_state or 
+        st.session_state.sim_manager.mechanism.name != choosedMech.name):
+        st.session_state.sim_manager = SimulationManager(mech)
+    sim_manager = st.session_state.sim_manager
     m1 = sim_manager.mechanism
-    
+
     if st.button(":material/play_circle: Run Animation"):
         with st.spinner("Simulate and create an animation..."):
             sim_manager.simulate_over_360(num_steps=36)
-            print("Anzahl Frames:", len(next(iter(sim_manager.trajectories.values()))))
             gif_buf = sim_manager.create_animation()
             # Speichere die erzeugten GIF-Bytes in st.session_state
             st.session_state["animation_bytes"] = gif_buf.getvalue()
@@ -255,6 +257,39 @@ if st.session_state["state"] == "Animation":
             st.session_state["animation_bytes"] = None
             st.session_state["csv_bytes"] = None
             st.rerun()
+
+    if st.session_state.get("simulation_done", False):
+        st.divider()
+
+        # Neue Geschwindigkeitsberechnungssektion
+        st.header(":material/speed: Speed analysis")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            crank_rpm = st.slider("Crank speed (RPM)", 1, 120, 60)
+            selected_point = st.selectbox("Point of analysis", [j.name for j in choosedMech.joints])
+
+        if st.button(":material/calculate: Calculate velocity"):
+            velocity, step_length, steps = sim_manager.calculate_forward_velocity(crank_rpm, selected_point)
+            col1, col2 = st.columns([1, 2])  # Mittlere Spalte größer machen für bessere Zentrierung
+            with col1:
+                st.markdown("<div style='margin-top:120px;'></div>", unsafe_allow_html=True)
+                st.info(f"Maximum speed in x: {velocity:.2f} m/s")
+                st.info(f"Step length: {step_length:.2f} m")
+                st.info(f"Steps: {steps:.2f}")
+                st.info(f"Crank speed: {crank_rpm} RPM")
+            with col2:
+                # Visualisierung
+                fig, ax = plt.subplots()
+                ax.plot(
+                    [pos[0] for pos in sim_manager.trajectories[selected_point]],
+                    [pos[1] for pos in sim_manager.trajectories[selected_point]]
+                )
+                ax.set_title(f"trajectories {selected_point}")
+                ax.set_xlabel("X-position [m]")
+                ax.set_ylabel("Y-position [m]")
+                st.pyplot(fig)
+
 
 if st.session_state["state"] == "Parts_List":
     st.header(":material/list: Create Bill of Materials")

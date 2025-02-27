@@ -164,3 +164,32 @@ class SimulationManager:
         except Exception as e:
             print(f"Fehler beim CSV-Export: {e}")
             return b""  
+        
+
+    def calculate_forward_velocity(self, crank_rpm, point):
+        """
+        Berechnet die Vorwärtsgeschwindigkeit basierend auf der Kurbeldrehzahl
+        und der gespeicherten Trajektorien-Daten.
+        """
+        if not self.trajectories:
+            return 0.0, 0.0, 0.0  # Geschwindigkeit, Schrittlänge, Schritthöhe
+        #print(f"Trajectories {self.trajectories}")
+        x_positions = [pos[0] for pos in self.trajectories[point]]
+        y_positions = [pos[1] for pos in self.trajectories[point]]
+        #print(f"Positions for joint '{point}': x={x_positions}, y={y_positions}")
+
+        # Berechne Schrittparameter
+        step_length = 0.0
+        for i in range(len(x_positions) - 1):
+            temp = abs(x_positions[i+1] - x_positions[i])
+            if temp > step_length:
+                step_length = temp
+
+
+        # Berechne effektive Geschwindigkeit
+        steps_per_revolution = len(x_positions)
+        #print(f"Steps per revolution: {steps_per_revolution}")
+        effective_velocity = (crank_rpm/60)/steps_per_revolution * step_length  # m/s
+    
+        return round(effective_velocity, 4), round(step_length, 4), steps_per_revolution
+    
