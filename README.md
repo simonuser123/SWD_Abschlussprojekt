@@ -13,6 +13,7 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 
 -  **Live-Editor** – Mechanismen in Echtzeit erstellen und bearbeiten.  
 -  **Animation als gif** – Die Bewegung des Mechanismus wird als gif angezeigt und kann auch heruntergeladen werden.    
+-  **OpenSCAD-Export** – Export des Mechanismus als OpenSCAD-Datei.
 -  **Erstellung einer Stückliste (BOM)** – Übersicht aller Komponenten.  
 -  **Speed Analysis** – Analyse der Mechanismus-Geschwindigkeit.  
 -  **Diverse UI-Verbesserungen**:
