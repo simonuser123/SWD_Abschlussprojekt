@@ -41,5 +41,5 @@ streamlit run .\src\main.py
 <img src="https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03" alt="Beispielbild" width="400" />
 
 ## UML -Diagramm
-
+[Viergelenkkette_trajectories.csv](https://github.com/user-attachments/files/19015798/Viergelenkkette_trajectories.csv)
 
