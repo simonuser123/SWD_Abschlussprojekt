@@ -20,7 +20,7 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 -  **Diverse UI-Verbesserungen**:
   -  Viergelenkkette und Strandbeest **können nicht gelöscht oder geändert werden**.
   -  Optimierte Benutzeroberfläche
-  -  
+    
 ## 🔧 **Download & Vorbereitun**  
  
 ```bash
