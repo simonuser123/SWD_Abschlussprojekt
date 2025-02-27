@@ -46,5 +46,3 @@ streamlit run main.py
  Autor: 	Gleirscher Simon, Heiss Lukas
  GitHub: simonuser123, luheiss
  E-Mail: emailsimonXX, luheiss@mci4me.at
-
-

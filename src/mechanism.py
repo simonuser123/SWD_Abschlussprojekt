@@ -45,6 +45,7 @@ class Joint:
     
     @classmethod
     def find_all_joints(cls):
+        """Gibt die Namen aller joints als String zurück."""
         result = cls.db_connector.all()
         if result:
             return [x["name"] for x in result if "name" in x]
@@ -80,6 +81,14 @@ class Joint:
 
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
+
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
 
     def __str__(self):
         return f"Joint {self.name} at ({self.x}, {self.y})"
@@ -126,6 +135,14 @@ class Link:
         }
     
     @classmethod
+    def find_all_links(cls):
+        """Gibt die Namen aller links als String zurück."""
+        result = cls.db_connector.all()
+        if result:
+            return [x["name"] for x in result if "name" in x]
+        return []
+
+    @classmethod
     def find_link_info(self):
         return self.db_connector.all()
 
@@ -151,6 +168,30 @@ class Link:
     
     def print_info(self):
         print(f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}")
+
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
+
+    @classmethod
+    def update_link(cls):
+        """Aktualisiert den Link."""
+        all_links = cls.db_connector.all()
+
+        for link_data in all_links:
+            link_name = link_data["name"]
+            joint_a = Joint.find_by_name(link_data["joint_a"]["name"])
+            joint_b = Joint.find_by_name(link_data["joint_b"]["name"])
+
+            if joint_a and joint_b:
+                updated_link = Link(link_name, joint_a, joint_b)
+                updated_link.initialize_self_lenght() 
+                updated_link.save() 
+
 
     def __str__(self):
         return f"Link between Joint {self.joint_a.name} and Joint {self.joint_b.name} with length {self.length}"
@@ -321,22 +362,24 @@ class Mechanism:
     
     @classmethod
     def find_joints_by_mechanism(cls, mechanismName):
-        '''Zuerst wird eine Liste von Listen aller Joints erstellt. Deshalb unten die zwei for schleifen'''
         qr = Query()
         result = cls.db_connector.search(qr.name == mechanismName)
-        if result:
-            joint_data = [x["joints"] for x in result]
+        if not result:
+            return []
+        
+        # Korrektur: Hole die Joint-Daten direkt aus dem Mechanismus-Eintrag
+        joint_data = result[0].get("joints", [])  # Direkter Zugriff auf "joints"
+        
         joints = []
-        for data_list in joint_data:
-            for data in data_list:
-                joint = Joint(
-                    name=data['name'],
-                    x=data['x'],
-                    y=data['y'],
-                    is_fixed=data['is_fixed'],
-                    on_circular_path=data['on_circular_path']
-                )
-                joints.append(joint)
+        for data in joint_data:
+            joint = Joint(
+                name=data['name'],
+                x=data['x'],
+                y=data['y'],
+                is_fixed=data['is_fixed'],
+                on_circular_path=data['on_circular_path']
+            )
+            joints.append(joint)
         return joints
     
     @classmethod
@@ -348,48 +391,153 @@ class Mechanism:
         result = cls.db_connector.search(qr.name == mechanismName)
 
         if not result:
-            print(f"Fehler: Kein Mechanismus mit dem Namen {mechanismName} gefunden!")
             return []
 
-        link_data = result[0].get("links", [])  # Hole die gespeicherten Links aus der Datenbank
-
-        # Lade alle Joint-Instanzen nur einmal und speichere sie in einem Dictionary
-        joints = cls.find_joints_by_mechanism(mechanismName)
-        joint_dict = {joint.name: joint for joint in joints}
+        # Lade die Joints des Mechanismus (bereits vorhanden)
+        mechanism_joints = cls.find_joints_by_mechanism(mechanismName)
+        # Erstelle ein Dictionary für schnellen Zugriff: {joint_name: joint_object}
+        joint_dict = {joint.name: joint for joint in mechanism_joints}
 
         links = []
-        for link_info in link_data:
-            # Hole die existierenden Joint-Instanzen aus dem Dictionary
-            joint_a = joint_dict.get(link_info["joint_a"]["name"])
-            joint_b = joint_dict.get(link_info["joint_b"]["name"])
+        for mech_entry in result:
+            link_data = mech_entry.get("links", [])
+            for link_info in link_data:
+                # Hole die Joint-Instanzen aus dem Mechanismus (nicht neu erstellen!)
+                joint_a = joint_dict.get(link_info["joint_a"]["name"])
+                joint_b = joint_dict.get(link_info["joint_b"]["name"])
 
-            if joint_a and joint_b:
-                # Erstelle ein neues Link-Objekt mit den geladenen Joint-Referenzen
-                link = Link(link_info["name"], joint_a, joint_b)
-                link.length = link_info["length"]  # Setze die Länge aus der Datenbank
+                if not joint_a or not joint_b:
+                    continue  # Fehlerbehandlung optional
+                
+                link = Link(
+                    name=link_info["name"],
+                    joint_a=joint_a,
+                    joint_b=joint_b,
+                    length=link_info["length"]
+                )
                 links.append(link)
-            else:
-                print(f"Fehler: Konnte Joint {link_info['joint_a']['name']} oder {link_info['joint_b']['name']} nicht finden!")
-
         return links
     
-
-if __name__ == "__main__":
-    # Beispiel zur Überprüfung
-    # g1 = Joint("1", 0, 0)
-    # g2 = Joint("2", 0, 10)
-    # g3 = Joint("3", 10, 10)
-
-    # s1 = Link("t", g1, g2)
-    # s1.save()
-    # s2 = Link("g", g2, g3)
-
-    # joint1 = Joint("1", x=-30.0, y=0.0, is_fixed=True)
-    #joint2 = Joint("2", x=0.0, y=0.0, on_circular_path=True)
-
-    #print(joint1)
-    #print(joint2)
-    print(Mechanism.find_joints_by_mechanism("Viergelenkkette"))
-    print(Mechanism.find_links_by_mechanism("Viergelenkkette"))
-
+    @classmethod
+    def find_driven_angle_by_mechanism(cls, mechanismName):
+        """
+        Sucht in der Datenbank den Mechanismus mit dem angegebenen Namen
+        und gibt den gespeicherten driven_angle zurück.
+        Falls kein Mechanismus gefunden wird, wird None zurückgegeben.
+        """
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanismName)
+        if result:
+            return result[0].get("driven_angle", None)
+        return None
     
+    @classmethod
+    def find_mech_by_name(cls, mechanism_name):
+        qr = Query()
+        result = cls.db_connector.search(qr.name == mechanism_name)
+
+        if result:
+            mech_data = result[0]
+            joints = [Joint(
+                name=j["name"], 
+                x=j["x"], 
+                y=j["y"], 
+                is_fixed=j["is_fixed"], 
+                on_circular_path=j["on_circular_path"]
+            ) for j in mech_data["joints"]]
+
+            joint_dict = {joint.name: joint for joint in joints}
+            links = []
+            for l in mech_data["links"]:
+                joint_a = joint_dict.get(l["joint_a"]["name"])
+                joint_b = joint_dict.get(l["joint_b"]["name"])
+                if joint_a and joint_b:
+                    link = Link(l["name"], joint_a, joint_b, l["length"])
+                    links.append(link)
+
+            new = Mechanism(name=mech_data["name"],joints=joints,links=links)
+            return new
+
+        return None
+
+    @classmethod
+    def clear_by_name(cls, name):
+        qr = Query()
+        if cls.db_connector.remove(qr.name == name):
+            return ("f{name} deleted!")
+        else:
+            return ("f{name} not found!")
+
+    def generate_parts_list(self):
+        """
+        Erzeugt eine Stückliste des Mechanismus mit folgenden Kategorien:
+        - Gestänge: Alle Links mit Name, Länge und den verbundenen Gelenken.
+        - Antriebe: Alle getriebenen Gelenke (on_circular_path == True) mit aktueller Position.
+        - Gelenke: Alle Gelenke mit Positionsangabe und Typ (fix, getrieben, frei).
+        """
+        parts_list = {}
+
+        # Gestänge (Links)
+        parts_list["Gestänge"] = []
+        for link in self.links:
+            parts_list["Gestänge"].append({
+                "Name": link.name,
+                "Länge": round(link.length, 2) if link.length is not None else None,
+                "Gelenk A": link.joint_a.name,
+                "Gelenk B": link.joint_b.name
+            })
+
+        # Antriebe (getriebene Gelenke)
+        parts_list["Antriebe"] = []
+        for joint in self.joints:
+            if joint.on_circular_path:
+                parts_list["Antriebe"].append({
+                    "Name": joint.name,
+                    "Position": f"({joint.x:.2f}, {joint.y:.2f})"
+                })
+
+        # Gelenke (alle Gelenke, mit Typangabe)
+        parts_list["Gelenke"] = []
+        for joint in self.joints:
+            if joint.is_fixed:
+                typ = "fix"
+            elif joint.on_circular_path:
+                typ = "getrieben"
+            else:
+                typ = "frei"
+            parts_list["Gelenke"].append({
+                "Name": joint.name,
+                "Position": f"({joint.x:.2f}, {joint.y:.2f})",
+                "Typ": typ
+            })
+        return parts_list
+
+    def get_drive_links(self):
+        """Gibt alle mit Antrieben verbundenen Links zurück"""
+        drive_joints = [j for j in self.joints if j.on_circular_path]
+        drive_links = []
+        for link in self.links:
+            if link.joint_a in drive_joints or link.joint_b in drive_joints:
+                drive_links.append(link)
+        return drive_links
+    
+def clear_workspace():
+    all_joints = Joint.find_all_joints()
+    all_links = Link.find_all_links()
+    msg_j = None
+    msg_l = None
+    if all_joints:
+        for joint in all_joints:
+            Joint.clear_by_name(joint)
+            msg_j = "Joints cleared. "
+    else:
+        msg_j = "No Joints in Table. "
+
+    if all_links:
+        for link in all_links:
+            Link.clear_by_name(link)
+            msg_l = "Links cleared."
+    else:
+        msg_l = "No Links in Table."
+    return msg_j + msg_l
+

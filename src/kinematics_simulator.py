@@ -9,11 +9,20 @@ class KinematicsSimulator:
         Es werden alle Gelenke, die weder fix noch durch den Antrieb (on_circular_path)
         bestimmt sind, als optimierbare Variablen identifiziert.
         """
-        print("/////////////////// Kinematik Methode //////////////////")
+        
         self.mechanism = mechanism
         # Optimierbar sind jene Gelenke, die weder fix noch getrieben sind.
         self.free_joints = [joint for joint in self.mechanism.joints if (not joint.is_fixed) and (not joint.on_circular_path)]
-        print("Freie Gelenke:", [joint.name for joint in self.free_joints])
+        # Debug-Ausgabe
+        print("[DEBUG] Gelenkattribute:")
+        for joint in self.mechanism.joints:
+            print(f"  - {joint.name}: is_fixed={joint.is_fixed}, on_circular_path={joint.on_circular_path}")
+        print("[DEBUG] Freie Gelenke:", [j.name for j in self.free_joints])
+        # Stelle sicher, dass alle Links ihre Soll-Länge (ursprüngliche Länge) initialisiert haben.
+        for link in self.mechanism.links:                           
+            if link.length is None:
+                link.initialize_self_lenght()
+
 
     def update_driven_joint(self):
         """
@@ -58,7 +67,7 @@ class KinematicsSimulator:
             current_length = link.get_current_length()
             error = current_length - link.length
             errors.append(error)
-            print(f"Link {link.name}: current length = {current_length}, target = {link.length}, error = {error}")
+            #print(f"Link {link.name}: current length = {current_length}, target = {link.length}, error = {error}")
         return np.array(errors)
 
     
