@@ -6,7 +6,9 @@
 # Simulator für ebene Mechanismen
   **Abschlussprojekt Softwaredesign BA-MECH-23**: Gleirscher Simon, Lukas Heiss
 ## ✔️ **Mindestanforderungen**  
- **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
+ **Erfüllt!** Alle grundlegenden Funktionen sind implementiert. 
+#### Web APP wurde deployed und läuft hier:
+#### https://simonuser123-swd-abschlussprojekt-srcmain-ke3kt3.streamlit.app/
 
 ## ✨ **Erweiterungen**  
 Neben den Basisfunktionen wurden folgende Features hinzugefügt:  
