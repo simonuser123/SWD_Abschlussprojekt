@@ -1,9 +1,9 @@
-# Simulator für ebene Mechanismen
-
 ![GitHub repo size](https://img.shields.io/github/repo-size/simonuser123/SWD_Abschlussprojekt)
 ![GitHub last commit](https://img.shields.io/github/last-commit/simonuser123/SWD_Abschlussprojekt)
-![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt)
 ![GitHub issues](https://img.shields.io/github/issues/simonuser123/SWD_Abschlussprojekt)
+![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt)
+
+# Simulator für ebene Mechanismen
 
 ## ✔️ **Mindestanforderungen**  
  **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
