@@ -209,9 +209,7 @@ if st.session_state["state"] == "Animation":
             st.rerun()
 
     # --------------- Animation Editor ---------------
-    st.header(":material/animated_images: Simulation & Animation")
-    st.info("Calculate the kinematics of the mechanism over an angle range from 0 to 360° and create an animation.")
-        
+    st.header(":material/animated_images: Simulation & Animation")        
     mech = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
     choosedMech = Mechanism.find_mech_by_name(mech)
     
@@ -221,9 +219,15 @@ if st.session_state["state"] == "Animation":
     sim_manager = st.session_state.sim_manager
     m1 = sim_manager.mechanism
 
+    st.info("Calculate the kinematics of the mechanism over a full rotation of the driven shaft and create an animation. ")
+    st.info("Note: A higher number of calculated steps provides a more precise result, but it also increases the computation time. ")
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        num_steps = st.slider("Number of steps", 36, 360, 72, step=9)
+
     if st.button(":material/play_circle: Run Animation"):
         with st.spinner("Simulate and create an animation..."):
-            sim_manager.simulate_over_360(num_steps=36)
+            sim_manager.simulate_over_360(num_steps=num_steps)
             gif_buf = sim_manager.create_animation()
             # Speichere die erzeugten GIF-Bytes in st.session_state
             st.session_state["animation_bytes"] = gif_buf.getvalue()
@@ -271,23 +275,39 @@ if st.session_state["state"] == "Animation":
 
         if st.button(":material/calculate: Calculate velocity"):
             velocity, step_length, steps = sim_manager.calculate_forward_velocity(crank_rpm, selected_point)
+            
             col1, col2 = st.columns([1, 2])  # Mittlere Spalte größer machen für bessere Zentrierung
             with col1:
-                st.markdown("<div style='margin-top:120px;'></div>", unsafe_allow_html=True)
-                st.info(f"Maximum speed in x: {velocity:.2f} m/s")
-                st.info(f"Step length: {step_length:.2f} m")
-                st.info(f"Steps: {steps:.2f}")
-                st.info(f"Crank speed: {crank_rpm} RPM")
+                st.markdown("<div style='margin-top:100px;'></div>", unsafe_allow_html=True)
+                st.metric(label="Maximum Forward Speed", 
+                         value=f"{velocity:.2f} m/s",
+                         help="Calculated forward velocity in x-direction")
+
+                st.metric(label="Step Length", 
+                         value=f"{step_length:.2f} m",
+                         help="Horizontal distance between steps")
+
+                st.metric(label="Crank Speed", 
+                         value=f"{crank_rpm} RPM",
+                         help="Input rotation speed")
+                
+                st.metric(label="Step Length", 
+                         value=f"{step_length:.2f} m",
+                         help="Horizontal distance between steps")
+                st.markdown("</div>", unsafe_allow_html=True)
+                
             with col2:
                 # Visualisierung
                 fig, ax = plt.subplots()
                 ax.plot(
                     [pos[0] for pos in sim_manager.trajectories[selected_point]],
-                    [pos[1] for pos in sim_manager.trajectories[selected_point]]
+                    [pos[1] for pos in sim_manager.trajectories[selected_point]],
+                    marker='o', linestyle='-', color='blue'
                 )
-                ax.set_title(f"trajectories {selected_point}")
+                ax.set_title(f"trajectory of {selected_point}")
                 ax.set_xlabel("X-position [m]")
                 ax.set_ylabel("Y-position [m]")
+                ax.grid(True)
                 st.pyplot(fig)
 
 
@@ -306,64 +326,85 @@ if st.session_state["state"] == "Parts_List":
             st.rerun()
 
     with st.form("BOM"):
-        st.write("Select components:")
-        include_joints = st.checkbox("Joints", True)
-        include_links = st.checkbox("Links", True)
-        include_drives = st.checkbox("Drives", True)
         selected_mech = st.selectbox("Select Mechanism", Mechanism.find_all_mechs())
-        
+
         if st.form_submit_button(":material/description: Generate BOM"):
             mechanism = Mechanism.find_mech_by_name(selected_mech)
-            
-            # Generate BOM
+
+            # Identify drive components first
+            drive_joints = [j for j in mechanism.joints if j.on_circular_path]
+            drive_links = []
+            for link in mechanism.links:
+                if link.joint_a in drive_joints or link.joint_b in drive_joints:
+                    drive_links.append(link)
+
             bom = []
-            if include_joints:
-                bom.extend([{
-                    "Type": "Joint",
-                    "Name": joint.name,
-                    "Fixed": "Yes" if joint.is_fixed else "No",
-                    "Drive": "Yes" if joint.on_circular_path else "No",
-                    "Position": f"({joint.x}, {joint.y})"
-                } for joint in mechanism.joints])
-            
-            if include_links:
-                bom.extend([{
-                    "Type": "Link",
-                    "Name": link.name,
-                    "Length": f"{link.length:.2f}",
-                    "Joint A": link.joint_a.name,
-                    "Joint B": link.joint_b.name
-                } for link in mechanism.links])
-            
-            if include_drives:
-                drives = [joint for joint in mechanism.joints if joint.on_circular_path]
-                bom.extend([{
-                    "Type": "Drive",
-                    "Name": drive.name,
-                    "Drive Type": "Rotary Actuator",
-                    "Radius": next((link.length for link in mechanism.links 
-                                 if (link.joint_a == drive or link.joint_b == drive) 
-                                 and (link.joint_a.is_fixed or link.joint_b.is_fixed)), None)
-                } for drive in drives])
-            
-            # Save BOM in session state
+
+            fixed_joints = [j for j in mechanism.joints if j.is_fixed and j not in drive_joints]
+            free_joints = [j for j in mechanism.joints if not j.is_fixed and j not in drive_joints]
+            bom.append({
+                "Category": "Joints",
+                "Name": "Fixed Joints",
+                "Quantity": len(fixed_joints),
+                "comment": ", ".join([j.name for j in fixed_joints]) or "-"
+            })
+            bom.append({
+                "Category": "Joints",
+                "Name": "Free Joints",
+                "Quantity": len(free_joints),
+                "comment": ", ".join([j.name for j in free_joints]) or "-"
+            })
+
+            standard_links = [l for l in mechanism.links if l not in drive_links]
+            # Group links by length (rounded to 2 decimals)
+            length_groups = {}
+            for link in standard_links:
+                rounded_length = round(link.length, 2)
+                if rounded_length not in length_groups:
+                    length_groups[rounded_length] = []
+                length_groups[rounded_length].append(link.name)
+            for length, names in length_groups.items():
+                bom.append({
+                    "Category": "Links",
+                    "Name": f"Link {length:.2f}m",
+                    "Quantity": len(names),
+                    "comment": ", ".join(names)
+                })
+            for drive in drive_joints:
+                # Find connected fixed joint and link
+                drive_link = next((l for l in mechanism.links 
+                                  if (l.joint_a == drive or l.joint_b == drive) 
+                                  and (l.joint_a.is_fixed or l.joint_b.is_fixed)), None)
+                bom.append({
+                    "Category": "Drive System",
+                    "Name": "Drive Unit",
+                    "Quantity": 1,
+                    "comment": f"Drive joint: {drive.name}, Lever arm: {drive_link.length:.2f}m" if drive_link else drive.name
+                })
+
             st.session_state.bom = bom
             st.session_state.show_bom = True
 
     if st.session_state.get("show_bom", False):
-        st.header(":material/list: Bill of Materials")
-        
-        df_bom = pd.DataFrame(st.session_state.bom)
-        
-        grouped = df_bom.groupby("Type")
-        for typ, group in grouped:
-            st.subheader(f"{typ}s")
-            st.dataframe(group.reset_index(drop=True))
+        st.header(":material/list: Bill of Materials (DIN 6771)")
 
-        csv = df_bom.to_csv(index=False).encode("utf-8")
+        df_bom = pd.DataFrame(st.session_state.bom)
+
+        df_bom = df_bom.set_index(['Name', 'Quantity'])
+        # Style dataframe
+        styled_df = df_bom.style.set_properties(**{
+            'background-color': '#f8f9fa',
+            'border': '1px solid #dee2e6',
+            'padding': '8px'
+        })
+        st.dataframe(styled_df, use_container_width=True)
+
+        # CSV Download
+        csv = df_bom.to_csv(sep=';').encode("utf-8")
         st.download_button(
-            label=":material/download: Download BOM",
+            label=":material/download: Download BOM (CSV)",
             data=csv,
             file_name=f"bom_{selected_mech}.csv",
-            mime="text/csv"
+            mime="text/csv",
+            help="Download in DIN 6771 compatible format using semicolon delimiter"
         )

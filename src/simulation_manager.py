@@ -181,7 +181,7 @@ class SimulationManager:
         # Berechne Schrittparameter
         step_length = 0.0
         for i in range(len(x_positions) - 1):
-            temp = abs(x_positions[i+1] - x_positions[i])
+            temp = x_positions[i+1] - x_positions[i]
             if temp > step_length:
                 step_length = temp
 
