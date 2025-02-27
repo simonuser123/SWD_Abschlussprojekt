@@ -41,4 +41,5 @@ streamlit run .\src\main.py
  Autoren:	Gleirscher Simon (simonuser123), Lukas Heiss (luheiss)
 
  ## Starndbeest
- ![Image](https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03)
+<img src="https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03" alt="Beispielbild" width="300" />
+
