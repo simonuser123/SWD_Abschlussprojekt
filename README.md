@@ -27,8 +27,8 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 ## 🔧 **Download & Vorbereitung**  
 
 ### **1. Repository klonen**  
-```bash```
-git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git
+```bash
+git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git```
 
 python -m venv venv  # Virtuelle Umgebung erstellen
 venv\Scripts\activate  # Windows
