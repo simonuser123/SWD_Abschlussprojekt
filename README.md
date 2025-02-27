@@ -19,10 +19,8 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 -  **Speed Analysis** – Analyse der Mechanismus-Geschwindigkeit.  
 -  **Diverse UI-Verbesserungen**:
   -  Viergelenkkette und Strandbeest **können nicht gelöscht oder geändert werden**.
-  -  Optimierte Benutzerführung für einfachere Bedienung.
-
----
-
+  -  Optimierte Benutzeroberfläche
+  -  
 ## 🔧 **Download & Vorbereitun**  
  
 ```bash
