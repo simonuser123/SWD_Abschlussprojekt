@@ -8,25 +8,25 @@
 > **Ein interaktiver Streamlit-Web-App zur Simulation und Animation von ebenen Mechanismen, inklusive Viergelenkkette und Strandbeest.**  
 
 ## ✅ **Mindestanforderungen**  
-✔️ **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
+ **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
 
 ## 🚀 **Erweiterungen**  
 Neben den Basisfunktionen wurden folgende Features hinzugefügt:  
 
-- 🎨 **Live-Editor** – Mechanismen in Echtzeit erstellen und bearbeiten.  
-- 📥 **Download als ZIP** – Speichert Simulationsergebnisse in einer ZIP-Datei.  
-- 📊 **Export als CSV** – Trajektorien-Daten als CSV exportieren.  
-- 📝 **Erstellung einer Stückliste (BOM)** – Übersicht aller Komponenten.  
-- ⚡ **Speed Analysis** – Analyse der Mechanismus-Geschwindigkeit.  
-- 🎛️ **Diverse UI-Verbesserungen**:
-  - ❌ Viergelenkkette und Strandbeest **können nicht gelöscht oder geändert werden**.
-  - 🖥️ Optimierte Benutzerführung für einfachere Bedienung.
+-  **Live-Editor** – Mechanismen in Echtzeit erstellen und bearbeiten.  
+-  **Download als ZIP** – Speichert Simulationsergebnisse in einer ZIP-Datei.  
+-  **Export als CSV** – Trajektorien-Daten als CSV exportieren.  
+-  **Erstellung einer Stückliste (BOM)** – Übersicht aller Komponenten.  
+-  **Speed Analysis** – Analyse der Mechanismus-Geschwindigkeit.  
+-  **Diverse UI-Verbesserungen**:
+  -  Viergelenkkette und Strandbeest **können nicht gelöscht oder geändert werden**.
+  -  Optimierte Benutzerführung für einfachere Bedienung.
 
 ---
 
 ## 🔧 **Download & Vorbereitung**  
 
-### 📌 **1. Repository klonen**  
+### **1. Repository klonen**  
 ```bash```
 git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git
 
@@ -36,12 +36,12 @@ pip install -r requirements.txt  # Abhängigkeiten installieren
 cd src  # In den src-Ordner wechseln
 streamlit run main.py
 
-## 🤝 ** Mitwirken & Beiträge **
-💡 Pull Requests sind willkommen!
+## 🤝 **Mitwirken & Beiträge**
+ Pull Requests sind willkommen!
 
-## 📧 ** Kontakt **
-📌 Autor: 	Gleirscher Simon, Heiss Lukas
-📌 GitHub: simonuser123, luheiss
-📌 E-Mail: emailsimonXX, luheiss@mci4me.at
+## 📧 **Kontakt**
+ Autor: 	Gleirscher Simon, Heiss Lukas
+ GitHub: simonuser123, luheiss
+ E-Mail: emailsimonXX, luheiss@mci4me.at
 
 
