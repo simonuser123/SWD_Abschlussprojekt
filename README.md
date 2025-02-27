@@ -4,8 +4,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt)
 
 # Simulator für ebene Mechanismen
-https://github.com/simonuser123/SWD_Abschlussprojekt/issues/5#issue-2885463951
-![Strandbeestbein](https://github.com/user-attachments/assets/0ffc61eb-8891-4e3b-a21)
+(![Image](https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03))
 ## ✔️ **Mindestanforderungen**  
  **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
 
