@@ -21,19 +21,23 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
   -  Optimierte Benutzeroberfläche
     
 ## 🔧 **Download & Vorbereitung**  
- 
+### 1. Repository klonen
 ```bash
 git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git
 ```
+### 2. Virtuelle Umgebung erstellen
 ```bash
 python -m venv .venv
 ```
+### 3. Virtuelle Umgebung aktivieren
 ```bash
 .\.venv\Scripts\activate
 ```
+### 3. Abhängigkeiten installieren
 ```bash
 pip install -r requirements.txt 
 ```
+### 4. Anwendung starten
 ```bash
 streamlit run .\src\main.py
 ```
