@@ -36,7 +36,7 @@ python -m venv venv
 pip install -r requirements.txt 
 ```
 ```bash
-streamlit run main.py
+streamlit run .\src\main.py
 ```
 
 ## 🤝 **Mitwirken & Beiträge**
