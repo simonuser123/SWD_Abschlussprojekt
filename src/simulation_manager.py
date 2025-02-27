@@ -179,12 +179,7 @@ class SimulationManager:
         #print(f"Positions for joint '{point}': x={x_positions}, y={y_positions}")
 
         # Berechne Schrittparameter
-        step_length = 0.0
-        for i in range(len(x_positions) - 1):
-            temp = x_positions[i+1] - x_positions[i]
-            if temp > step_length:
-                step_length = temp
-
+        step_length = max(x_positions) - min(x_positions)
 
         # Berechne effektive Geschwindigkeit
         steps_per_revolution = len(x_positions)
