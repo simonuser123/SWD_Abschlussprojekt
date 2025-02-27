@@ -43,6 +43,4 @@ streamlit run .\src\main.py
  Pull Requests sind willkommen!
 
 ## 📧 **Kontakt**
- Autor: 	Gleirscher Simon, Heiss Lukas
- GitHub: simonuser123, luheiss
- E-Mail: emailsimonXX, luheiss@mci4me.at
+ Autoren:	Gleirscher Simon (simonuser123), Lukas Heiss (luheiss)
