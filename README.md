@@ -20,7 +20,7 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
   -  Viergelenkkette und Strandbeest **können nicht gelöscht oder geändert werden**.
   -  Optimierte Benutzeroberfläche
     
-## 🔧 **Download & Vorbereitun**  
+## 🔧 **Download & Vorbereitung**  
  
 ```bash
 git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git
