@@ -1,10 +1,10 @@
 # 🛠️ Ebenenmechanismus Simulator
 
 > **Ein interaktiver Streamlit-Web-App zur Simulation und Animation von ebenen Mechanismen, inklusive Viergelenkkette und Strandbeest.**
-
-![GitHub repo size](https://img.shields.io/github/repo-size/simonuser123/SWD_Abschlussprojekt)
-![GitHub last commit](https://img.shields.io/github/last-commit/simonuser123/SWD_Abschlussprojekt)
-![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt)
+https://github.com/simonuser123/SWD_Abschlussprojekt.git
+![GitHub repo size](https://img.shields.io/github/repo-size/simonuser123/SWD_Abschlussprojekt.git)
+![GitHub last commit](https://img.shields.io/github/last-commit/simonuser123/SWD_Abschlussprojekt.git)
+![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt.git)
 
 ## 🚀 **Features**
 - **Erstellen und Bearbeiten von Mechanismen** durch eine interaktive Benutzeroberfläche.
