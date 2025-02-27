@@ -5,8 +5,6 @@
 ![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt?style=social)
 ![GitHub issues](https://img.shields.io/github/issues/simonuser123/SWD_Abschlussprojekt)
 
-> **Eine interaktive Streamlit-Web-App zur Simulation und Animation von ebenen Mechanismen, wie z.B.: Viergelenkkette und Strandbeest.**  
-
 ## ✔️ **Mindestanforderungen**  
  **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
 
