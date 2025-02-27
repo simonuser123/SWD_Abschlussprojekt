@@ -24,7 +24,7 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 
 ---
 
-## 🔧 **Download & Vorbereitung**  
+## 🔧 **Download & Vorbereitun**  
 
 ### **1. Repository klonen**  
 ```bash
