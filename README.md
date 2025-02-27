@@ -4,7 +4,7 @@
 ![GitHub stars](https://img.shields.io/github/stars/simonuser123/SWD_Abschlussprojekt)
 
 # Simulator für ebene Mechanismen
-  **Autoren:**	Gleirscher Simon (simonuser123), Lukas Heiss (luheiss)
+  **Abschlussprojekt Softwaredesign BA-MECH-23**: Gleirscher Simon, Lukas Heiss
 ## ✔️ **Mindestanforderungen**  
  **Erfüllt!** Alle grundlegenden Funktionen sind implementiert.  
 
@@ -38,5 +38,5 @@ streamlit run .\src\main.py
  Pull Requests sind willkommen!
 
  ## Starndbeest
-<img src="https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03" alt="Beispielbild" width="300" />
+<img src="https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03" alt="Beispielbild" width="400" />
 
