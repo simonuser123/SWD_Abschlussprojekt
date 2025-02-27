@@ -43,7 +43,7 @@ streamlit run .\src\main.py
 ```
 
  ## Strandbeest
- ###Erstellt mit unser Web APP
+ **Erstellt mit unser Web APP**
 <img src="https://github.com/user-attachments/assets/8b345f82-7b6e-480c-8845-f8aa63c6ef03" alt="Beispielbild" width="400" />
 
 ## UML -Diagramm
