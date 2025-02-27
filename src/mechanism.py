@@ -64,6 +64,21 @@ class Joint:
             return cls(data["name"], data["x"], data["y"], data["is_fixed"], data["on_circular_path"])
         return None
     
+    @classmethod
+    def find_joints_by_mechanism(cls, mechanismName):
+        """
+        Ruft alle Gelenke eines bestimmten Mechanismus aus der Datenbank ab.
+        """
+        qr = Query()
+        result = cls.db_connector.search(qr.mechanism == mechanismName)
+
+        if not result:
+            print(f"Keine Gelenke für Mechanismus '{mechanismName}' gefunden.")
+            return []
+
+        return [joint["name"] for joint in result]
+
+
     def print_info(self):
         print(f"Joint {self.name} at ({self.x}, {self.y})")
 
@@ -369,8 +384,12 @@ class Mechanism:
     
     @classmethod
     def find_links_by_mechanism(cls, mechanismName):
+        """
+        Lädt alle Links für einen Mechanismus und stellt sicher, dass sie bestehende Joint-Instanzen nutzen.
+        """
         qr = Query()
         result = cls.db_connector.search(qr.name == mechanismName)
+
         if not result:
             return []
 

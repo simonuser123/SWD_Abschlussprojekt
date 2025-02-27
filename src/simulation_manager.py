@@ -33,7 +33,6 @@ def load_mechanism_from_db(mechanismName):
     return Mechanism(name=mechanismName, joints=joints, links=links, angle=driven_angle)
 
 
-
 class SimulationManager:
     _instance = None
 
@@ -48,10 +47,11 @@ class SimulationManager:
         self.mechanism = Mechanism.find_mech_by_name(mechanismName)
         print(f"Debug Mechanism: {self.mechanism.joints}")
         #for joint in self.mechanism.joints:
-        #    print(f"Joint {joint.name}: is_fixed={joint.is_fixed}, on_circular_path={joint.on_circular_path}, initial pos=({joint.x}, {joint.y})")
+        #    print(f"Joint {joint.name}: is_fixed={joint.is_fixed}, on_circular_path={joint.on_circular_path}, initial pos=({joint.x}, {joint.y
         self.simulator = KinematicsSimulator(self.mechanism)
-        # Speichert die Bahnkurven der Gelenke als Dictionary {joint_name: [Positionen]}
-        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}   
+        print("...KinematicsSimulator erstellt!")  # Debug
+        self.trajectories = {joint.name: [] for joint in self.mechanism.joints}
+
 
     def simulate_over_360(self, num_steps=36):
         """
