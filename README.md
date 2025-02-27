@@ -30,12 +30,21 @@ Neben den Basisfunktionen wurden folgende Features hinzugefügt:
 ```bash
 git clone https://github.com/simonuser123/SWD_Abschlussprojekt.git
 ```
-
+```bash
 python -m venv venv  # Virtuelle Umgebung erstellen
+```
+```bash
 venv\Scripts\activate  # Windows
+```
+```bash
 pip install -r requirements.txt  # Abhängigkeiten installieren
+```
+```bash
 cd src  # In den src-Ordner wechseln
+```
+```bash
 streamlit run main.py
+```
 
 ## 🤝 **Mitwirken & Beiträge**
  Pull Requests sind willkommen!
