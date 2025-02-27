@@ -449,7 +449,59 @@ class Mechanism:
         else:
             return ("f{name} not found!")
 
+    def generate_parts_list(self):
+        """
+        Erzeugt eine Stückliste des Mechanismus mit folgenden Kategorien:
+        - Gestänge: Alle Links mit Name, Länge und den verbundenen Gelenken.
+        - Antriebe: Alle getriebenen Gelenke (on_circular_path == True) mit aktueller Position.
+        - Gelenke: Alle Gelenke mit Positionsangabe und Typ (fix, getrieben, frei).
+        """
+        parts_list = {}
 
+        # Gestänge (Links)
+        parts_list["Gestänge"] = []
+        for link in self.links:
+            parts_list["Gestänge"].append({
+                "Name": link.name,
+                "Länge": round(link.length, 2) if link.length is not None else None,
+                "Gelenk A": link.joint_a.name,
+                "Gelenk B": link.joint_b.name
+            })
+
+        # Antriebe (getriebene Gelenke)
+        parts_list["Antriebe"] = []
+        for joint in self.joints:
+            if joint.on_circular_path:
+                parts_list["Antriebe"].append({
+                    "Name": joint.name,
+                    "Position": f"({joint.x:.2f}, {joint.y:.2f})"
+                })
+
+        # Gelenke (alle Gelenke, mit Typangabe)
+        parts_list["Gelenke"] = []
+        for joint in self.joints:
+            if joint.is_fixed:
+                typ = "fix"
+            elif joint.on_circular_path:
+                typ = "getrieben"
+            else:
+                typ = "frei"
+            parts_list["Gelenke"].append({
+                "Name": joint.name,
+                "Position": f"({joint.x:.2f}, {joint.y:.2f})",
+                "Typ": typ
+            })
+        return parts_list
+
+    def get_drive_links(self):
+        """Gibt alle mit Antrieben verbundenen Links zurück"""
+        drive_joints = [j for j in self.joints if j.on_circular_path]
+        drive_links = []
+        for link in self.links:
+            if link.joint_a in drive_joints or link.joint_b in drive_joints:
+                drive_links.append(link)
+        return drive_links
+    
 def clear_workspace():
     all_joints = Joint.find_all_joints()
     all_links = Link.find_all_links()

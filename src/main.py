@@ -8,7 +8,7 @@ from simulation_manager import SimulationManager
 # --------------- Page Settings ---------------
 # st.set_page_config(layout="wide")
 st.set_page_config(
-    page_title="Ebenenmechanismus Simulator",
+    page_title="Simulator for planar mechanisms",
     page_icon=":material/simulation:",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -29,7 +29,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title(":material/simulation: Ebenenmechanismus Simulator")
+st.title(":material/simulation: Simulator for planar mechanisms")
 st.markdown("---")
 
 if "state" not in st.session_state:
@@ -44,6 +44,10 @@ def go_to_state_animation():
     """Setzt den Status auf 'Animation'."""
     st.session_state["state"] = "Animation"
 
+def go_to_state_parts_list():
+    """Setzt den Status auf 'Parts_List'."""
+    st.session_state["state"] = "Parts_List"
+
 if st.session_state["state"] == "Live_Editor":
     st.header(":material/edit: Live- Editor")
         
@@ -53,6 +57,10 @@ if st.session_state["state"] == "Live_Editor":
         if st.button(":material/animated_images: Simulation & Animation"):
             go_to_state_animation()
             st.rerun()
+        if st.button(":material/list: Create Bill of Materials"):
+            go_to_state_parts_list()
+            st.rerun()
+
         st.title(":material/settings: Settings")
         with st.form("Save Point"):
             # ++++++ Add New Point ++++++
@@ -162,7 +170,7 @@ if st.session_state["state"] == "Live_Editor":
         st.header(":material/nest_heat_link_e: Joints")
         all_joints_info = Joint.find_joints_info()
         if not all_joints_info:
-            st.warning("Noch keine Joints gespeichert.")
+            st.warning("No joints saved yet.")
         else:
             columns = ["name", "x", "y", "is_fixed", "on_circular_path"]
             df = pd.DataFrame(all_joints_info, columns=columns)
@@ -175,7 +183,7 @@ if st.session_state["state"] == "Live_Editor":
         st.header(":material/link: Links")
         all_links_info = Link.find_link_info()
         if not all_links_info:
-            st.warning("Noch keine Links gespeichert.")
+            st.warning("No links saved yet.")
         else:
             df1 = []
             for links in all_links_info:
@@ -192,13 +200,17 @@ if st.session_state["state"] == "Animation":
 
     with st.sidebar:
         st.header(":material/menu: Navigation")
-        if st.button(":material/arrow_back: Zurück zum Live-Editor wechseln"):
+        if st.button(":material/list: Create Bill of Materials"):
+            go_to_state_parts_list()
+            st.rerun()
+
+        if st.button(":material/edit: Live-Editor"):
             go_to_state_live_editor()
             st.rerun()
 
     # --------------- Animation Editor ---------------
     st.header(":material/animated_images: Simulation & Animation")
-    st.write("Berechne die Kinematik des Mechanismus über einen Winkelbereich von 0 bis 360° und erstelle eine Animation.")
+    st.info("Calculate the kinematics of the mechanism over an angle range from 0 to 360° and create an animation.")
         
     mech = st.selectbox("Select mechanism", Mechanism.find_all_mechs())
     choosedMech = Mechanism.find_mech_by_name(mech)
@@ -207,12 +219,13 @@ if st.session_state["state"] == "Animation":
     m1 = sim_manager.mechanism
     
     if st.button(":material/play_circle: Run Animation"):
-        with st.spinner("Simuliere und erstelle Animation..."):
+        with st.spinner("Simulate and create an animation..."):
             sim_manager.simulate_over_360(num_steps=36)
             print("Anzahl Frames:", len(next(iter(sim_manager.trajectories.values()))))
             gif_buf = sim_manager.create_animation()
             # Speichere die erzeugten GIF-Bytes in st.session_state
             st.session_state["animation_bytes"] = gif_buf.getvalue()
+            st.session_state["csv_bytes"] = sim_manager.export_trajectories_to_csv()
         st.session_state.simulation_done = True
 
     # Prüfe, ob wir schon Animationsergebnisse haben, und zeige diese an:
@@ -221,25 +234,101 @@ if st.session_state["state"] == "Animation":
         with col2:
             st.image(st.session_state["animation_bytes"], caption=f"{choosedMech.name} Animation", use_container_width=True)
         st.download_button(
-            label=":material/download: Animation herunterladen",
+            label=":material/download: Download animation",
             data=st.session_state["animation_bytes"],
-            file_name="mechanism_animation.gif",
+            file_name=f"{choosedMech.name}_animation.gif",
             mime="image/gif"
         )
 
-    if st.session_state.get("simulation_done", False):
-        csv_bytes = sim_manager.export_trajectories_to_csv()
-        st.write("Debug - CSV Bytes:", csv_bytes)  # Debug-Ausgabe
-        if csv_bytes:
+    if "csv_bytes" in st.session_state and st.session_state.csv_bytes:
+        #st.write("Debug - CSV Bytes:", csv_bytes)  # Debug-Ausgabe
             st.download_button(
-                label=":material/download: CSV herunterladen",
-                data=csv_bytes,
-                file_name="bahnkurven.csv",
+                label=":material/download: Download CSV",
+                data=st.session_state["csv_bytes"],
+                file_name=f"{choosedMech.name}_trajectories.csv",
                 mime="text/csv"
             )
 
     if st.session_state.get("simulation_done", False):
-        if st.button(":material/cancel: Animation abbrechen"):
+        if st.button(":material/cancel: Reset animation"):
             st.session_state.simulation_done = False
             st.session_state["animation_bytes"] = None
+            st.session_state["csv_bytes"] = None
             st.rerun()
+
+if st.session_state["state"] == "Parts_List":
+    st.header(":material/list: Create Bill of Materials")
+    st.info("Create a bill of materials (BOM) for the mechanism.")
+
+    with st.sidebar:
+        st.header(":material/menu: Navigation")
+        if st.button(":material/animated_images: Simulation & Animation"):
+            go_to_state_animation()
+            st.rerun()
+
+        if st.button(":material/edit: Live Editor"):
+            go_to_state_live_editor()
+            st.rerun()
+
+    with st.form("BOM"):
+        st.write("Select components:")
+        include_joints = st.checkbox("Joints", True)
+        include_links = st.checkbox("Links", True)
+        include_drives = st.checkbox("Drives", True)
+        selected_mech = st.selectbox("Select Mechanism", Mechanism.find_all_mechs())
+        
+        if st.form_submit_button(":material/description: Generate BOM"):
+            mechanism = Mechanism.find_mech_by_name(selected_mech)
+            
+            # Generate BOM
+            bom = []
+            if include_joints:
+                bom.extend([{
+                    "Type": "Joint",
+                    "Name": joint.name,
+                    "Fixed": "Yes" if joint.is_fixed else "No",
+                    "Drive": "Yes" if joint.on_circular_path else "No",
+                    "Position": f"({joint.x}, {joint.y})"
+                } for joint in mechanism.joints])
+            
+            if include_links:
+                bom.extend([{
+                    "Type": "Link",
+                    "Name": link.name,
+                    "Length": f"{link.length:.2f}",
+                    "Joint A": link.joint_a.name,
+                    "Joint B": link.joint_b.name
+                } for link in mechanism.links])
+            
+            if include_drives:
+                drives = [joint for joint in mechanism.joints if joint.on_circular_path]
+                bom.extend([{
+                    "Type": "Drive",
+                    "Name": drive.name,
+                    "Drive Type": "Rotary Actuator",
+                    "Radius": next((link.length for link in mechanism.links 
+                                 if (link.joint_a == drive or link.joint_b == drive) 
+                                 and (link.joint_a.is_fixed or link.joint_b.is_fixed)), None)
+                } for drive in drives])
+            
+            # Save BOM in session state
+            st.session_state.bom = bom
+            st.session_state.show_bom = True
+
+    if st.session_state.get("show_bom", False):
+        st.header(":material/list: Bill of Materials")
+        
+        df_bom = pd.DataFrame(st.session_state.bom)
+        
+        grouped = df_bom.groupby("Type")
+        for typ, group in grouped:
+            st.subheader(f"{typ}s")
+            st.dataframe(group.reset_index(drop=True))
+
+        csv = df_bom.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label=":material/download: Download BOM",
+            data=csv,
+            file_name=f"bom_{selected_mech}.csv",
+            mime="text/csv"
+        )
